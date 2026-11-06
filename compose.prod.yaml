@@ -1,0 +1,73 @@
+# Production-style stack (gunicorn + whitenoise). Secrets come from .env.prod, which is never committed.
+# Put a reverse proxy (nginx/caddy) with TLS in front of `web` and let it serve /media/ from the media volume,
+# or set DJANGO_SERVE_MEDIA=1 for small single-host installs.
+name: alijahon-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  web:
+    build:
+      context: .
+      target: prod
+    image: alijahon-web:prod
+    env_file: .env.prod
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks: [backend]
+    logging: *default-logging
+
+  db:
+    image: mysql:8.4
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    env_file: .env.prod
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      start_period: 40s
+      retries: 10
+    restart: always
+    networks: [backend]
+    logging: *default-logging
+
+  redis:
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: always
+    networks: [backend]
+    logging: *default-logging
+
+networks:
+  backend:
+
+volumes:
+  mysql_data:
+  media_data:

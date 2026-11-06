@@ -1,0 +1,92 @@
+{% load i18n static %}
+{% get_current_language as LANGUAGE_CODE %}
+<div class="announce">
+    <div class="container">
+        <div class="announce-items">
+            <span><svg class="i"><use href="#i-truck"/></svg>{% trans "O'zbekiston bo'ylab yetkazib berish 1–3 kun" %}</span>
+            <span><svg class="i"><use href="#i-cash"/></svg>{% trans "To'lov — mahsulotni qabul qilganda" %}</span>
+            <span><svg class="i"><use href="#i-shield"/></svg>{% trans "Rasmiy kafolat va 14 kunlik qaytarish" %}</span>
+        </div>
+        <form class="lang-switch" action="{% url 'set_language' %}" method="post">
+            {% csrf_token %}
+            <input name="next" type="hidden" value="{{ request.get_full_path }}">
+            {% for code, label in LANGUAGES %}
+                <button name="language" value="{{ code }}" type="submit" title="{{ label }}"
+                        class="{% if code == LANGUAGE_CODE %}is-active{% endif %}">{% if code == 'oz' %}ЎЗ{% else %}{{ code }}{% endif %}</button>
+            {% endfor %}
+        </form>
+    </div>
+</div>
+<header class="site-header">
+    <div class="container header-inner">
+        <a class="logo" href="{% url 'main_base' %}" aria-label="Alijahon">
+            <span class="logo-mark"><svg class="i" style="stroke-width:2.6"><use href="#i-logo"/></svg></span>
+            <span class="logo-text">alijahon<small>{% trans "market" %}</small></span>
+        </a>
+        <button class="btn btn-dark catalog-btn" type="button" data-mega-toggle aria-expanded="false" aria-controls="mega-menu">
+            <svg class="i"><use href="#i-grid"/></svg><span class="label-text">{% trans "Katalog" %}</span>
+        </button>
+        <form class="header-search input-group" action="{% url 'category_list' %}" method="get" role="search"
+              data-search="{% url 'search' %}">
+            <svg class="i"><use href="#i-search"/></svg>
+            <input class="input" type="search" name="q" value="{{ request.GET.q|default:'' }}" autocomplete="off"
+                   placeholder="{% trans 'Mahsulot yoki kategoriya qidiring…' %}" aria-label="{% trans 'Qidiruv' %}"
+                   role="combobox" aria-expanded="false" aria-controls="search-results" aria-autocomplete="list">
+            <button class="btn btn-dark btn-sm search-submit" type="submit">{% trans "Qidirish" %}</button>
+            <div class="search-panel" id="search-results" role="listbox"></div>
+        </form>
+        <nav class="header-actions" aria-label="{% trans 'Foydalanuvchi menyusi' %}">
+            {% if user.is_authenticated and user.is_operator %}
+                <a class="icon-btn hide-mobile" href="{% url 'operator_page' %}" title="{% trans 'Operator paneli' %}"><svg class="i"><use href="#i-headset"/></svg></a>
+            {% endif %}
+            {% if user.is_authenticated and user.is_currier %}
+                <a class="icon-btn hide-mobile" href="{% url 'currier_page' %}" title="{% trans 'Kuryer paneli' %}"><svg class="i"><use href="#i-truck"/></svg></a>
+            {% endif %}
+            <a class="icon-btn hide-mobile" href="{% url 'favorite_page' %}" aria-label="{% trans 'Sevimlilar' %}">
+                <svg class="i"><use href="#i-heart"/></svg>
+                <span class="badge-count" data-like-count data-count="{{ favorite_ids|length }}">{{ favorite_ids|length }}</span>
+            </a>
+            <a class="icon-btn" href="{% url 'cart_page' %}" aria-label="{% trans 'Savat' %}" data-cart-target>
+                <svg class="i"><use href="#i-bag"/></svg>
+                <span class="badge-count" data-cart-count data-count="{{ cart_count }}">{{ cart_count }}</span>
+            </a>
+            {% if user.is_authenticated %}
+                <a class="account-link hide-mobile" href="{% url 'profile_page' %}">
+                    <span class="avatar">{% if user.image %}<img src="{{ user.image.url }}" alt="">{% else %}{{ user.initials }}{% endif %}</span>
+                    <span class="label-text">{{ user.first_name|default:_("Kabinet") }}</span>
+                </a>
+            {% else %}
+                <a class="account-link hide-mobile" href="{% url 'login_page' %}">
+                    <span class="avatar" style="background:var(--sunken);color:var(--ink)"><svg class="i i-sm"><use href="#i-user"/></svg></span>
+                    <span class="label-text">{% trans "Kirish" %}</span>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    <div class="mega" id="mega-menu">
+        <div class="container mega-inner">
+            <div>
+                <div class="row-between mb-2">
+                    <strong>{% trans "Kategoriyalar" %}</strong>
+                    <a class="link-arrow text-sm" href="{% url 'category_list' %}">{% trans "Barcha mahsulotlar" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                <div class="mega-grid">
+                    {% for category in nav_categories %}
+                        <a class="mega-cat" href="{{ category.get_absolute_url }}">
+                            <img src="{{ category.image.url }}" alt="" width="56" height="56" loading="lazy">
+                            <span><strong>{{ category.name }}</strong><span>{{ category.product_count }} {% trans "ta mahsulot" %}</span></span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <a class="mega-promo" href="{% url 'category_list' %}?on_sale=1">
+                <span class="tag tag-accent" style="align-self:flex-start">{% trans "Chegirmalar" %}</span>
+                <div>
+                    <h3>{% trans "−30% gacha" %}<br>{% trans "haftaning eng yaxshi narxlari" %}</h3>
+                    <span class="link-arrow mt-1">{% trans "Ko'rish" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></span>
+                </div>
+            </a>
+        </div>
+    </div>
+</header>
+<div class="mega-backdrop"></div>

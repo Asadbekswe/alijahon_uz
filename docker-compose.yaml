@@ -1,9 +1,0 @@
-services:
-  alijahon_service:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    command:
-      - bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    ports:
-      - 8000:8000

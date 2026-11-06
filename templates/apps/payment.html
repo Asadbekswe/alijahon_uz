@@ -1,142 +1,45 @@
-{% extends 'apps/base.html' %}
-
-{% load humanize %}
-{% load i18n %}
-{% load custom_tags %}
-{% block title %}
-    Payment page
-{% endblock %}
-{% block main_content %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="container">
-                <br>
-                <div class="row">
-                    <div class="col-sm-6 p-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{% trans 'Mening hisobim' %}</h5>
-                            </div>
-                            <div class="card-body">
-                                <h5 class="card-title">{% trans 'Asosiy balansda' %}: {{ user.balance|intcomma }}
-                                    sum</h5>
-                                <h5 class="card-title">{% trans "To'lab berildi" %}: 0 sum</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6 p-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{% trans "To'lovga so'rov berish formasi" %}</h5>
-                            </div>
-                            {% for message in messages %}
-                                {% if message.level == 25 %}
-                                    <div class="alert alert-success">
-                                        {{ message }}
-                                    </div>
-                                {% else %}
-                                    <div class="alert alert-danger">
-                                        {{ message }}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                            <div class="card-body">
-                                <p class="text-muted">
-                                    {% trans "Iltimos, kartangiz ma'lumotlarini va yechib olmoqchi bo'lgan miqdorni to'ldiring. So'rovingizni yuborishdan oldin ma'lumotlarning to'g'riligiga ishonch hosil qiling." %}
-                                </p>
-                            </div>
-
-                            <nav>
-                                <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                                    <button id="nav-money-tab" class="nav-link active" data-bs-toggle="tab"
-                                            data-bs-target="#nav-money" type="button" role="tab"
-                                            aria-controls="nav-money" aria-selected="true">Pul
-                                    </button>
-                                </div>
-                            </nav>
-                            <div class="tab-content" id="nav-tabContent">
-                                <div class="tab-pane fade show active" id="nav-money" role="tabpanel"
-                                     aria-labelledby="nav-money-tab">
-                                    <form class="card-body" action="{% url 'payment_page' %}" method="POST"
-                                          enctype="multipart/form-data">
-                                        {% csrf_token %}
-                                        <div class="form-group">
-                                            {% trans "Karta raqami" %} <input type="text" name="card_number"
-                                                                              class="form-control"
-                                                                              placeholder="**** **** **** ****"
-                                                                              maxlength="19"
-                                                                              id="card_number_id" required>
-                                        </div>
-                                        <div class="form-group">
-                                            {% trans "Pul Miqdori" %}<input type="number" name="amount"
-                                                                            class="form-control"
-                                                                            placeholder={% trans "Miqdorini kiriting" %}
-                                                                                    id="id_amount" required>
-                                        </div>
-                                        <input type="submit" value="{% trans "Tasdiqlash" %}" class="btn btn-primary">
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <br>
-                <br>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col">{% trans "Sana" %}</th>
-                            <th scope="col">{% trans "Hisob raqam" %}</th>
-                            <th scope="col">{% trans "Summa" %}</th>
-                            <th scope="col">{% trans "Holat" %}</th>
-                            <th scope="col">{% trans "Xabar" %}</th>
-                            <th scope="col">{% trans "Rasmi" %}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% if transactions %}
-                            {% for transaction in transactions %}
-                                <tr class="text-center">
-                                    <td>{{ transaction.created_at|custom_date }}</td>
-                                    <td>{{ transaction.card_number|custom_intcomma }}</td>
-                                    <td>{{ transaction.amount|intcomma }} sum</td>
-                                    <td>{{ transaction.status.title }}</td>
-                                    <td>{{ transaction.text|slice:5 }}</td>
-                                    <td>
-                                        {% if transaction.check_image %}
-                                            <a href="{{ transaction.check_image.url }}" target="_blank">
-                                                <img src="{{ transaction.check_image.url }}" alt="Check Image"
-                                                     style="width: 30px; height: auto;"/>
-                                            </a>
-                                        {% else %}
-                                            No Image Available
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center">
-                                    {% trans "Hozircha sizda pul yechish so'rovlari mavjud emas" %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-        </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "To'lovlar" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "To'lovlar" %}</h1><p>{% trans "Hamkorlik balansi va pul yechib olish" %}</p></div></div>
+    <div class="kpis">
+        <div class="kpi is-dark"><div class="kpi-label"><svg class="i i-sm"><use href="#i-wallet"/></svg>{% trans "Balans" %}</div><div class="kpi-value">{{ user.balance|money }}</div><div class="kpi-hint">{% trans "yechib olish mumkin" %}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Kutilayotgan" %}</div><div class="kpi-value">{{ expected_total|money }}</div><div class="kpi-hint">{% trans "yo'ldagi buyurtmalar" %}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Ko'rib chiqilmoqda" %}</div><div class="kpi-value">{{ pending_total|money }}</div><div class="kpi-hint">{% trans "so'rovlar" %}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "To'langan" %}</div><div class="kpi-value">{{ paid_total|money }}</div><div class="kpi-hint">{% trans "jami" %}</div></div>
     </div>
-    <script>
-        const inputNumber = document.getElementById('card_number_id');
-
-        inputNumber.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || '';
-            e.target.value = formattedValue;
-        });
-    </script>
+    <div class="detail-grid" style="grid-template-columns:minmax(0,1fr) 380px">
+        <div class="card">
+            <div class="card-head"><h2>{% trans "So'rovlar tarixi" %}</h2></div>
+            {% if transactions %}
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th>{% trans "Sana" %}</th><th>{% trans "Karta" %}</th><th class="num">{% trans "Summa" %}</th><th>{% trans "Holat" %}</th></tr></thead>
+                    <tbody>{% for t in transactions %}
+                        <tr><td class="nowrap">{{ t.created_at|date:"d.m.Y H:i" }}</td><td class="tnum">{{ t.masked_card }}</td><td class="num"><b>{{ t.amount|money }}</b></td>
+                            <td><span class="tag {% if t.status == 'paid' %}tag-success{% elif t.status == 'process' %}tag-warning{% else %}tag-danger{% endif %}">{{ t.get_status_display }}</span></td></tr>
+                    {% endfor %}</tbody></table></div>
+            {% else %}
+                <div class="empty" style="padding:32px"><span class="empty-icon"><svg class="i"><use href="#i-card"/></svg></span><h3>{% trans "Hali so'rovlar yo'q" %}</h3></div>
+            {% endif %}
+        </div>
+        <form class="card card-body" method="post" novalidate data-submit-once>
+            {% csrf_token %}
+            <h2 style="font-size:var(--fs-md)" class="mb-2">{% trans "Pul yechib olish" %}</h2>
+            {% if form.non_field_errors %}<div class="alert alert-danger mb-2">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+            <div class="field{% if form.card_number.errors %} has-error{% endif %}">
+                <label class="label" for="card">{% trans "Karta raqami" %} <span class="req">*</span></label>
+                <input class="input tnum" id="card" name="card_number" inputmode="numeric" autocomplete="cc-number" placeholder="8600 0000 0000 0000" data-card-number value="{{ form.card_number.value|default:'' }}" required>
+                {% for e in form.card_number.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="field{% if form.amount.errors %} has-error{% endif %}">
+                <label class="label" for="amount">{% trans "Summa, so'm" %} <span class="req">*</span></label>
+                <input class="input" id="amount" name="amount" type="number" min="{{ site_settings.minimum_sum }}" max="{{ user.balance }}" step="1000" value="{{ form.amount.value|default:'' }}" required>
+                <span class="field-hint">{% trans "Minimal summa:" %} {{ site_settings.minimum_sum|money }}</span>
+                {% for e in form.amount.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+            <button class="btn btn-primary btn-block mt-3" type="submit"{% if user.balance < site_settings.minimum_sum %} disabled{% endif %}>{% trans "So'rov yuborish" %}</button>
+            <p class="summary-note"><svg class="i i-sm"><use href="#i-clock"/></svg>{% trans "Mablag' 24 soat ichida kartangizga o'tkaziladi." %}</p>
+        </form>
+    </div>
 {% endblock %}

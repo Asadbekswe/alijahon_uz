@@ -1,0 +1,222 @@
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Alijahon — ishonchli onlayn do'kon" %}{% endblock %}
+{% block title_suffix %}{% endblock %}
+
+{% block content %}
+    {# ---------------------------------------------------------------- hero #}
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-main reveal">
+                <div class="hero-copy">
+                <div>
+                    <span class="eyebrow" style="color:#ffb08f"><svg class="i i-sm"><use href="#i-zap"/></svg>{% trans "Yangi mavsum kolleksiyasi" %}</span>
+                    <h1>{% trans "Sevimli narsalar —" %} <em>{% trans "bir qadam" %}</em> {% trans "uzoqlikda" %}</h1>
+                    <p>{% trans "Elektronika, uy jihozlari va go'zallik mahsulotlari. Buyurtma bering — operator siz bilan bog'lanadi, to'lov esa mahsulotni qabul qilganda." %}</p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary btn-lg" href="{% url 'category_list' %}">{% trans "Xaridni boshlash" %}<svg class="i"><use href="#i-arrow-right"/></svg></a>
+                        <a class="btn btn-lg" href="{% url 'category_list' %}?on_sale=1">{% trans "Chegirmalar" %}</a>
+                    </div>
+                </div>
+                <div class="hero-meta">
+                    <div><strong>{{ stats.products|number }}</strong><span>{% trans "mahsulot" %}</span></div>
+                    <div><strong>{{ stats.regions }}</strong><span>{% trans "hududga yetkazish" %}</span></div>
+                    <div><strong>{{ stats.reviews|number }}</strong><span>{% trans "haqiqiy sharh" %}</span></div>
+                </div>
+                </div>
+                {% if hero_product %}
+                    <div class="hero-visual">
+                    <div class="hero-product" aria-hidden="true"><img src="{{ hero_product.image.url }}" alt="" fetchpriority="high"></div>
+                    <a class="hero-price-card" href="{{ hero_product.get_absolute_url }}">
+                        <img src="{{ hero_product.image.url }}" alt="" width="52" height="52" style="border-radius:12px">
+                        <span><strong>{{ hero_product.name }}</strong>
+                            <span class="price-now{% if hero_product.discount_percent %} is-sale{% endif %}" style="font-size:var(--fs-base)">{{ hero_product.price|money }}</span></span>
+                    </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="hero-side">
+                {% with first=top_categories.0 second=top_categories.1 %}
+                    {% if first %}
+                        <a class="promo-tile promo-warm reveal" style="animation-delay:.08s" href="{{ first.get_absolute_url }}">
+                            <div><span class="tag" style="background:#fff">{{ first.product_count }} {% trans "mahsulot" %}</span>
+                                <h3 class="mt-1">{{ first.name }}</h3><p>{{ first.description }}</p></div>
+                            <span class="link-arrow">{% trans "Ko'rish" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></span>
+                            <img src="{{ first.image.url }}" alt="" loading="lazy">
+                        </a>
+                    {% endif %}
+                    {% if second %}
+                        <a class="promo-tile promo-cool reveal" style="animation-delay:.16s" href="{{ second.get_absolute_url }}">
+                            <div><span class="tag" style="background:#fff">{{ second.product_count }} {% trans "mahsulot" %}</span>
+                                <h3 class="mt-1">{{ second.name }}</h3><p>{{ second.description }}</p></div>
+                            <span class="link-arrow">{% trans "Ko'rish" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></span>
+                            <img src="{{ second.image.url }}" alt="" loading="lazy">
+                        </a>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </section>
+
+    {# ---------------------------------------------------------------- trust #}
+    <section class="section-tight">
+        <div class="container">
+            <div class="trust">
+                <div class="trust-item"><span class="trust-icon"><svg class="i"><use href="#i-truck"/></svg></span>
+                    <span><strong>{% trans "Tez yetkazish" %}</strong><span>{% trans "Toshkent bo'ylab 24 soatda" %}</span></span></div>
+                <div class="trust-item"><span class="trust-icon"><svg class="i"><use href="#i-cash"/></svg></span>
+                    <span><strong>{% trans "Qabul qilganda to'lov" %}</strong><span>{% trans "Oldindan to'lov shart emas" %}</span></span></div>
+                <div class="trust-item"><span class="trust-icon"><svg class="i"><use href="#i-shield"/></svg></span>
+                    <span><strong>{% trans "Rasmiy kafolat" %}</strong><span>{% trans "Har bir mahsulotga" %}</span></span></div>
+                <div class="trust-item"><span class="trust-icon"><svg class="i"><use href="#i-refresh"/></svg></span>
+                    <span><strong>{% trans "14 kun qaytarish" %}</strong><span>{% trans "Savolsiz almashtirish" %}</span></span></div>
+            </div>
+        </div>
+    </section>
+
+    {# ---------------------------------------------------------------- categories #}
+    {% if top_categories %}
+        <section class="section-tight">
+            <div class="container">
+                <div class="section-head">
+                    <div><h2>{% trans "Kategoriyalar" %}</h2><p>{% trans "Sizga kerakli bo'limni tanlang" %}</p></div>
+                    <a class="link-arrow hide-sm" href="{% url 'category_list' %}">{% trans "Hammasi" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                <div class="cat-grid">
+                    {% for category in top_categories %}
+                        <a class="cat-tile" href="{{ category.get_absolute_url }}">
+                            <img src="{{ category.image.url }}" alt="" loading="lazy" width="300" height="300">
+                            <div><strong>{{ category.name }}</strong><span>{{ category.product_count }} {% trans "ta mahsulot" %}</span></div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- deals #}
+    {% if deals %}
+        <section class="section-tight">
+            <div class="container">
+                <div class="deals-band">
+                    <div class="section-head">
+                        <div>
+                            <span class="eyebrow"><svg class="i i-sm"><use href="#i-zap"/></svg>{% trans "Kun taklifi" %}</span>
+                            <h2>{% trans "Chegirmalar kun oxirigacha" %}</h2>
+                            <p>{% trans "Eng mashhur mahsulotlarga 30% gacha chegirma" %}</p>
+                        </div>
+                        <div class="countdown" data-countdown aria-label="{% trans 'Taklif tugashiga qolgan vaqt' %}">
+                            <div><strong>00</strong><span>{% trans "soat" %}</span></div>
+                            <div><strong>00</strong><span>{% trans "daqiqa" %}</span></div>
+                            <div><strong>00</strong><span>{% trans "soniya" %}</span></div>
+                        </div>
+                    </div>
+                    <div class="rail" id="rail-deals">
+                        {% for product in deals %}{% include 'apps/products/_card.html' %}{% endfor %}
+                    </div>
+                    <div class="row-between mt-3">
+                        <a class="btn btn-soft" href="{% url 'category_list' %}?on_sale=1">{% trans "Barcha chegirmalar" %}<svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+                        <div class="rail-nav" data-rail-nav="rail-deals">
+                            <button class="btn btn-soft btn-icon" type="button" data-dir="-1" aria-label="{% trans 'Oldingi' %}"><svg class="i"><use href="#i-chevron-left"/></svg></button>
+                            <button class="btn btn-soft btn-icon" type="button" data-dir="1" aria-label="{% trans 'Keyingi' %}"><svg class="i"><use href="#i-chevron-right"/></svg></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- bestsellers #}
+    {% if bestsellers %}
+        <section class="section">
+            <div class="container">
+                <div class="section-head">
+                    <div><span class="eyebrow">{% trans "Xaridorlar tanlovi" %}</span><h2>{% trans "Eng ko'p sotilganlar" %}</h2></div>
+                    <a class="link-arrow hide-sm" href="{% url 'category_list' %}?sort=popular">{% trans "Hammasi" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                <div class="product-grid">
+                    {% for product in bestsellers %}{% include 'apps/products/_card.html' %}{% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- stats band #}
+    <section class="section-tight">
+        <div class="container stats-band">
+            <div class="intro">
+                <span class="eyebrow">{% trans "Nega Alijahon?" %}</span>
+                <h2>{% trans "Har bir buyurtma — shaxsiy nazoratda" %}</h2>
+                <p>{% trans "Operatorimiz buyurtmani tasdiqlaydi, kuryer esa qulay vaqtda olib keladi. Mahsulotni ko'rib, keyin to'laysiz." %}</p>
+            </div>
+            <div class="stat-tile"><strong>{{ stats.delivered|number }}</strong><span>{% trans "yetkazilgan buyurtma" %}</span></div>
+            <div class="stat-tile"><strong>{{ stats.regions }}</strong><span>{% trans "hududga yetkazib berish" %}</span></div>
+            <div class="stat-tile"><strong>{% if stats.rating %}{{ stats.rating|floatformat:1 }}★{% else %}—{% endif %}</strong><span>{% trans "o'rtacha xaridor bahosi" %}</span></div>
+        </div>
+    </section>
+
+    {# ---------------------------------------------------------------- new arrivals #}
+    {% if new_arrivals %}
+        <section class="section">
+            <div class="container">
+                <div class="section-head">
+                    <div><span class="eyebrow">{% trans "Yangi kelganlar" %}</span><h2>{% trans "Hozirgina omborga keldi" %}</h2></div>
+                    <div class="rail-nav" data-rail-nav="rail-new">
+                        <button class="btn btn-icon" type="button" data-dir="-1" aria-label="{% trans 'Oldingi' %}"><svg class="i"><use href="#i-chevron-left"/></svg></button>
+                        <button class="btn btn-icon" type="button" data-dir="1" aria-label="{% trans 'Keyingi' %}"><svg class="i"><use href="#i-chevron-right"/></svg></button>
+                    </div>
+                </div>
+                <div class="rail" id="rail-new">
+                    {% for product in new_arrivals %}{% include 'apps/products/_card.html' %}{% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- featured #}
+    {% if featured %}
+        <section class="section-tight">
+            <div class="container">
+                <div class="section-head">
+                    <div><span class="eyebrow">{% trans "Muharrir tanlovi" %}</span><h2>{% trans "Tavsiya etamiz" %}</h2></div>
+                    <a class="link-arrow hide-sm" href="{% url 'category_list' %}?sort=rating">{% trans "Reyting bo'yicha" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                <div class="product-grid">
+                    {% for product in featured %}{% include 'apps/products/_card.html' %}{% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- recently viewed #}
+    {% if recently_viewed %}
+        <section class="section">
+            <div class="container">
+                <div class="section-head"><div><h2>{% trans "Yaqinda ko'rganlaringiz" %}</h2></div></div>
+                <div class="rail">
+                    {% for product in recently_viewed %}{% include 'apps/products/_card.html' %}{% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {# ---------------------------------------------------------------- partner programme #}
+    <section class="section">
+        <div class="container">
+            <div class="partner-cta">
+                <div>
+                    <span class="eyebrow">{% trans "Hamkorlik dasturi" %}</span>
+                    <h2>{% trans "Mahsulotlarni tavsiya qiling — har bir sotuvdan daromad oling" %}</h2>
+                    <p>{% trans "Market bo'limida mahsulot tanlang, shaxsiy havola (oqim) yarating va uni ijtimoiy tarmoqlarda ulashing. Yetkazilgan har bir buyurtma uchun to'lov balansingizga tushadi." %}</p>
+                    <a class="btn btn-dark btn-lg mt-3" href="{% if user.is_authenticated %}{% url 'market_page' %}{% else %}{% url 'register_page' %}?next={% url 'market_page' %}{% endif %}">
+                        {% trans "Hamkor bo'lish" %}<svg class="i"><use href="#i-arrow-right"/></svg></a>
+                </div>
+                <div class="steps">
+                    <div class="step"><span><strong>{% trans "Mahsulot tanlang" %}</strong><span>{% trans "Har birida aniq to'lov summasi ko'rsatilgan" %}</span></span></div>
+                    <div class="step"><span><strong>{% trans "Oqim yarating" %}</strong><span>{% trans "Xaridorlarga chegirma ham bera olasiz" %}</span></span></div>
+                    <div class="step"><span><strong>{% trans "Daromad oling" %}</strong><span>{% trans "Balansni kartangizga yechib oling" %}</span></span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "So'rovlar" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "So'rovlar" %}</h1><p>{% trans "Oqimlaringiz orqali kelgan buyurtmalar. Mijoz raqami maxfiylik uchun yashirilgan." %}</p></div></div>
+    <div class="status-tabs">
+        <a class="chip{% if not active_status %} is-active{% endif %}" href="{% url 'inquiries_page' %}">{% trans "Hammasi" %}</a>
+        {% for value, label in statuses %}<a class="chip{% if active_status == value %} is-active{% endif %}" href="?status={{ value }}">{{ label }}</a>{% endfor %}
+    </div>
+    <div class="card">
+        {% if orders %}
+            <div class="table-wrap"><table class="table">
+                <thead><tr><th>ID</th><th>{% trans "Mahsulot" %}</th><th>{% trans "Mijoz" %}</th><th>{% trans "Hudud" %}</th><th>{% trans "Oqim" %}</th><th>{% trans "Holat" %}</th><th class="num">{% trans "To'lov" %}</th><th>{% trans "Sana" %}</th></tr></thead>
+                <tbody>{% for order in orders %}
+                    <tr><td class="tnum">#{{ order.pk }}</td>
+                        <td><div class="cell-product"><img src="{{ order.product.image.url }}" alt=""><span><strong>{{ order.product.name|truncatechars:34 }}</strong><span>{{ order.quantity }} {% trans "dona" %}</span></span></div></td>
+                        <td>{{ order.full_name }}<div class="text-xs muted">{{ order.phone_number|mask_phone }}</div></td>
+                        <td>{{ order.region|default:"—" }}</td><td>{{ order.stream.name }}</td>
+                        <td><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td class="num">{% widthratio order.payout 1 order.quantity as earn %}{{ earn|money }}</td>
+                        <td class="nowrap text-sm muted">{{ order.created_at|date:"d.m.Y H:i" }}</td></tr>
+                {% endfor %}</tbody>
+            </table></div>
+        {% else %}
+            <div class="empty"><span class="empty-icon"><svg class="i"><use href="#i-inbox"/></svg></span><h2>{% trans "Hozircha so'rovlar yo'q" %}</h2>
+                <p>{% trans "Oqim havolasini ulashing — buyurtmalar shu yerda ko'rinadi." %}</p></div>
+        {% endif %}
+    </div>
+    {% include 'apps/parts/pagination.html' %}
+{% endblock %}

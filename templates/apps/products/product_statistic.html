@@ -1,59 +1,42 @@
-{% extends 'apps/base.html' %}
-{% load humanize %}
-{% block title %}
-    Product statistika
-{% endblock %}
-{% block main_content %}
-    <div class="card mb-3" bis_skin_checked="1">
-        <div class="card-body" bis_skin_checked="1">
-            <div class="container border-bottom-4" bis_skin_checked="1">
-                <div class="content_name_block" bis_skin_checked="1">
-                    <a href="{% url  'market_page' %}" class="content_name_block_back">
-                        <svg class="svg-inline--fa fa-arrow-right fa-w-14" aria-hidden="true" focusable="false"
-                             data-prefix="fa" data-icon="arrow-right" role="img" xmlns="http://www.w3.org/2000/svg"
-                             viewBox="0 0 448 512" data-fa-i2svg="">
-                            <path fill="currentColor"
-                                  d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"></path>
-                        </svg>
-                    </a>
-                    <div class="content_name_block_text" bis_skin_checked="1">
-                        <h1>Mahsulot statistikasi</h1>
-                    </div>
-                </div>
-            </div>
-            <div class="container" bis_skin_checked="1">
-
-                <div class="content_favorite" bis_skin_checked="1">
-                    <div class="row" bis_skin_checked="1">
-                        <table class="table">
-                            <thead>
-                            <tr>
-                                <th scope="col">Ma'lumot</th>
-                                <th scope="col">Umumiy</th>
-                                <th scope="col">Sizda</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Oqimlar</td>
-                                <td>{{ product_stream_count }}</td>
-                                <td>{{ owner_stream_count }}</td>
-                            </tr>
-                            <tr>
-                                <td>Admin bonusi</td>
-                                <td>30000</td>
-                                <td>30000</td>
-                            </tr>
-                            <tr>
-                                <td>Mahsulot narxi</td>
-                                <td>{{ product.price|intcomma }}</td>
-                                <td>{{ product.price|intcomma }}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{{ product.name }} — {% trans "statistika" %}{% endblock %}
+{% block panel %}
+    <nav class="breadcrumbs"><a href="{% url 'market_page' %}">{% trans "Market" %}</a><svg class="i"><use href="#i-chevron-right"/></svg><span>{{ product.name }}</span></nav>
+    <div class="detail-grid">
+        <div class="card" style="overflow:hidden">
+            <div class="grid-2" style="gap:0">
+                <img src="{{ product.image.url }}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover">
+                <div class="card-body stack">
+                    <span class="p-cat">{{ product.category.name }}</span>
+                    <h1 style="font-size:var(--fs-xl)">{{ product.name }}</h1>
+                    <p class="muted text-sm">{{ product.short_description }}</p>
+                    <dl class="dl">
+                        <dt>{% trans "Narx" %}</dt><dd>{{ product.price|money }}</dd>
+                        <dt>{% trans "Sizning to'lovingiz" %}</dt><dd class="text-success">{{ product.discount_price|money }}</dd>
+                        <dt>{% trans "Omborda" %}</dt><dd>{{ product.quantity }} {% trans "dona" %}</dd>
+                        <dt>{% trans "Sotilgan" %}</dt><dd>{{ product.sold_count }}</dd>
+                    </dl>
+                    <button class="btn btn-primary btn-block" type="button" data-modal-open="stream-modal" data-modal-size="sm"
+                            data-fill='{"product": "{{ product.pk }}", "product_name": "{{ product.name|escapejs }}", "payout_label": "{{ product.discount_price|money|escapejs }}"}'>
+                        <svg class="i i-sm"><use href="#i-link"/></svg>{% trans "Oqim yaratish" %}</button>
+                    <a class="btn btn-block" href="{{ product.get_absolute_url }}" target="_blank" rel="noopener">{% trans "Mahsulot sahifasi" %}<svg class="i i-sm"><use href="#i-external"/></svg></a>
                 </div>
             </div>
         </div>
+        <div class="stack">
+            <div class="kpis" style="grid-template-columns:1fr 1fr;margin:0">
+                <div class="kpi"><div class="kpi-label">{% trans "Barcha oqimlar" %}</div><div class="kpi-value">{{ product_stream_count }}</div></div>
+                <div class="kpi is-dark"><div class="kpi-label">{% trans "Sizning oqimlaringiz" %}</div><div class="kpi-value">{{ owner_stream_count }}</div></div>
+            </div>
+            <div class="card card-body">
+                <h2 style="font-size:var(--fs-md)" class="mb-2">{% trans "Buyurtmalar holati" %}</h2>
+                {% if status_counts %}
+                    <div class="stack" style="--stack:10px">{% for row in status_counts %}
+                        <div class="row-between"><span class="status status-{{ row.status }}">{{ row.label }}</span><b class="tnum">{{ row.n }}</b></div>{% endfor %}</div>
+                {% else %}<p class="muted text-sm">{% trans "Hali buyurtmalar yo'q" %}</p>{% endif %}
+            </div>
+        </div>
     </div>
+    {% include 'apps/parts/stream_modal.html' %}
 {% endblock %}

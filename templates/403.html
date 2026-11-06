@@ -1,0 +1,12 @@
+{% extends 'apps/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Ruxsat yo'q" %}{% endblock %}
+{% block content %}
+<div class="error-page"><div style="display:grid;gap:16px;justify-items:center">
+    <div class="error-code">403</div>
+    <h1 style="font-size:var(--fs-2xl)">{% trans "Bu bo'lim siz uchun yopiq" %}</h1>
+    <p class="muted">{% trans "Sahifa faqat tegishli rol (operator, kuryer yoki administrator) uchun mavjud." %}</p>
+    <div class="row wrap" style="justify-content:center"><a class="btn btn-primary btn-lg" href="{% url 'main_base' %}">{% trans "Bosh sahifa" %}</a>
+        {% if user.is_authenticated %}<a class="btn btn-lg" href="{% url 'profile_page' %}">{% trans "Kabinet" %}</a>{% endif %}</div>
+</div></div>
+{% endblock %}

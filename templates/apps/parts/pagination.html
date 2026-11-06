@@ -1,0 +1,20 @@
+{% load i18n %}
+{% if is_paginated %}
+    <nav class="pagination" aria-label="{% trans 'Sahifalar' %}">
+        {% if page_obj.has_previous %}
+            <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="{% trans 'Oldingi' %}"><svg class="i i-sm"><use href="#i-chevron-left"/></svg></a>
+        {% endif %}
+        {% for num in paginator.get_elided_page_range %}
+            {% if num == page_obj.number %}
+                <span class="is-current" aria-current="page">{{ num }}</span>
+            {% elif num == paginator.ELLIPSIS %}
+                <span class="is-gap">…</span>
+            {% else %}
+                <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="{% trans 'Keyingi' %}"><svg class="i i-sm"><use href="#i-chevron-right"/></svg></a>
+        {% endif %}
+    </nav>
+{% endif %}

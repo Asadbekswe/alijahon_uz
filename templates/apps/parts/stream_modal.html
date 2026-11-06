@@ -1,0 +1,18 @@
+{% load i18n %}
+{# Template for the "create stream" dialog; app.js fills product id/name/payout from the opener's data-fill. #}
+<template id="stream-modal">
+    <div class="modal-body">
+        <h2 class="modal-title">{% trans "Oqim yaratish" %}</h2>
+        <p class="muted text-sm mb-2"><span data-text="product_name"></span> · {% trans "to'lov" %} <b data-text="payout_label"></b></p>
+        <form method="post" action="{% url 'create_stream_page' %}" class="stack" data-submit-once>
+            {% csrf_token %}
+            <input type="hidden" name="product">
+            <div class="field"><label class="label" for="stream-name">{% trans "Oqim nomi" %} <span class="req">*</span></label>
+                <input class="input" id="stream-name" name="name" required minlength="3" maxlength="255" placeholder="{% trans 'Masalan: Instagram — bahor aksiyasi' %}" autofocus></div>
+            <div class="field"><label class="label" for="stream-discount">{% trans "Xaridorga chegirma, so'm" %}</label>
+                <input class="input" id="stream-discount" name="discount" type="number" min="0" step="1000" value="0">
+                <span class="field-hint">{% trans "Chegirma sizning to'lovingizdan ayiriladi. Maksimum:" %} <b data-text="payout_label"></b></span></div>
+            <button class="btn btn-primary btn-block" type="submit">{% trans "Oqim yaratish" %}</button>
+        </form>
+    </div>
+</template>

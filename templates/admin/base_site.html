@@ -1,137 +1,21 @@
-{% extends "admin/base_site.html" %}
-{% load static %}
-{% load i18n %}
-{% load i18n_switcher %}
-{{ block.super }}
-
-{% block extrahead %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="shortcut icon" href="{% static 'apps/assets/img/icons/spot-illustrations/alijahon.png' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom_admin.css' %}"/>
+{% extends "admin/base.html" %}
+{% load static i18n %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="{% static 'store/img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'store/admin/admin.css' %}">
 {% endblock %}
-
+{% block branding %}
+    <div id="site-name"><a href="{% url 'admin:index' %}" class="brand"><span class="brand-mark">A</span>{{ site_header|default:_('Django administration') }}</a></div>
+    {% if user.is_anonymous %}{% include "admin/color_theme_toggle.html" %}{% endif %}
+{% endblock %}
 {% block userlinks %}
-    <div class="notification-container" style="float: left; margin-right: 20px;">
-        <a href="#" class="notification" id="notificationDropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-bell"></i>
-            <span>Inbox</span>
-            <span class="badge">3</span>
-        </a>
-        <div class="dropdown-menu" aria-labelledby="notificationDropdown">
-            <div class="dropdown-header">Notifications</div>
-            <a class="dropdown-item" href="#">Notification 1</a>
-            <a class="dropdown-item" href="#">Notification 2</a>
-            <div class="dropdown-footer">
-                <a href="#">View all notifications</a>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const notificationDropdown = document.getElementById('notificationDropdown');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-
-            notificationDropdown.addEventListener('click', function (event) {
-                event.preventDefault();
-                dropdownMenu.classList.toggle('show');
-            });
-
-            document.addEventListener('click', function (event) {
-                if (!notificationDropdown.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                    dropdownMenu.classList.remove('show');
-                }
-            });
-        });
-    </script>
-    &nbsp;
-        <a href="{{ request|switch_i18n:'en' }}">
-            <img class="i18n_flag" src="{% static 'admin/images/flag-Stars-and-Stripes-May-1-1795.webp' %}"/>
-        </a>
-        &nbsp;
-        /
-        &nbsp;
-        <a href="{{ request|switch_i18n:'ru' }}">
-            <img class="i18n_flag" src="{% static 'admin/images/Flag_of_Russia.svg.png' %}"/>
-        </a>
-        &nbsp;
-        /
-        &nbsp;
-        <a href="{{ request|switch_i18n:'uz' }}">
-            <img class="i18n_flag" src="{% static 'admin/images/Flag-Uzbekistan.webp' %}"/>
-        </a>
-        &nbsp;
-        /
-        &nbsp;
-        <a href="{{ request|switch_i18n:'oz' }}">
-            <img class="i18n_flag" src="{% static 'admin/images/Flag-Uzbekistan.webp' %}"/>
-        </a>
-        &nbsp;
-        /
-    {#    &nbsp; {% url 'admin:set_language' %}#}
-{#    <form action="#" method="post">#}
-{#        {% csrf_token %}#}
-{#        <label for="language">Choose Language:</label>#}
-{#        <select name="language" id="language" onchange="this.form.submit()">#}
-{#            <option value="en" {% if LANGUAGE_CODE == 'en' %}selected{% endif %}>English</option>#}
-{#            <option value="ru" {% if LANGUAGE_CODE == 'ru' %}selected{% endif %}>Русский</option>#}
-{#            <option value="uz" {% if LANGUAGE_CODE == 'uz' %}selected{% endif %}>O'zbek</option>#}
-{#            <option value="oz" {% if LANGUAGE_CODE == 'oz' %}selected{% endif %}>Ўзбек</option>#}
-{#        </select>#}
-{#    </form>#}
-{#    <style>#}
-{#        select {#}
-{#            padding: 10px;#}
-{#            border-radius: 5px;#}
-{#            border: 1px solid #ccc;#}
-{#            font-size: 14px;#}
-{#        }#}
-{##}
-{#        select:focus {#}
-{#            border-color: #007bff;#}
-{#            outline: none;#}
-{#        }#}
-{##}
-{#        input[type="submit"] {#}
-{#            padding: 8px 15px;#}
-{#            background-color: #007bff;#}
-{#            color: white;#}
-{#            border: none;#}
-{#            border-radius: 5px;#}
-{#            cursor: pointer;#}
-{#            font-size: 14px;#}
-{#        }#}
-{##}
-{#        input[type="submit"]:hover {#}
-{#            background-color: #0056b3;#}
-{#        }#}
-{##}
-{#    </style>#}
-    {% if user.is_active and user.is_staff %}
-        {% url 'django-admindocs-docroot' as docsroot %}
-        {% if docsroot %}
-            <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
-        {% endif %}
-    {% endif %}
-
-    {% if user.has_usable_password %}
-        <a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /
-    {% endif %}
-
-    <form action="{% url 'admin:logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                 class="bi bi-box-arrow-right"
-                 viewBox="0 0 16 16">
-                <path fill-rule="evenodd"
-                      d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"></path>
-                <path fill-rule="evenodd"
-                      d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"></path>
-            </svg>
-            {% trans 'Logout' %}
-        </button>
-    </form>
-
+    <a href="{% url 'main_base' %}">{% trans "Do'konni ochish" %}</a> /
+    {% if user.has_usable_password %}<a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a> /{% endif %}
+    <form id="logout-form" method="post" action="{% url 'admin:logout' %}">{% csrf_token %}<button type="submit">{% trans 'Log out' %}</button></form>
+    {% include "admin/color_theme_toggle.html" %}
 {% endblock %}
-
+{% block nav-global %}{% endblock %}

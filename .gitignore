@@ -318,7 +318,7 @@ dmypy.json
 cython_debug/
 .idea
 
-apps/migrations/
+# apps/migrations/ are committed (see README "Migrations")
 apps/fixtures/*
 templates/public/
 apps/static/apps/
@@ -332,3 +332,7 @@ TODO.txt!/templates/apps/parts/_footer.html
 !/templates/apps/parts/_operators_sidebar.html
 !/templates/apps/parts/_operators_pagination.html
 !/templates/apps/parts/
+
+# collected static files & local runtime
+/static/
+.env.prod

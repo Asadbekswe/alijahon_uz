@@ -1,0 +1,12 @@
+{% load i18n %}
+<div class="auth-art">
+    <a class="logo" href="{% url 'main_base' %}" style="color:#fff">
+        <span class="logo-mark" style="background:#fff;color:var(--ink)"><svg class="i" style="stroke-width:2.6"><use href="#i-logo"/></svg></span>alijahon</a>
+    <div>
+        <h2>{{ headline }}</h2>
+        <p>{{ sub }}</p>
+    </div>
+    <div class="collage">
+        {% for category in nav_categories|slice:":3" %}<img src="{{ category.image.url }}" alt="" width="140" height="140">{% endfor %}
+    </div>
+</div>

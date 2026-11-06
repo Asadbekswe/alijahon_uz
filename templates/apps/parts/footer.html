@@ -1,0 +1,52 @@
+{% load i18n %}
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <a class="logo" href="{% url 'main_base' %}">
+                    <span class="logo-mark"><svg class="i" style="stroke-width:2.6"><use href="#i-logo"/></svg></span>
+                    <span class="logo-text">alijahon</span>
+                </a>
+                <p>{% trans "Sifatli mahsulotlar, halol narxlar va eshigingizgacha yetkazib berish. To'lov — faqat mahsulotni qo'lingizga olganingizda." %}</p>
+                {% if support_phone %}
+                    <div class="footer-contact">
+                        <a href="tel:{{ support_phone }}"><svg class="i i-sm"><use href="#i-phone"/></svg>{{ support_phone }}</a>
+                        <span class="muted text-xs">{% trans "Har kuni 09:00 – 21:00" %}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <h4>{% trans "Xaridorlarga" %}</h4>
+                <ul>
+                    <li><a href="{% url 'category_list' %}">{% trans "Katalog" %}</a></li>
+                    <li><a href="{% url 'category_list' %}?on_sale=1">{% trans "Chegirmalar" %}</a></li>
+                    <li><a href="{% url 'order_page' %}">{% trans "Buyurtmalarim" %}</a></li>
+                    <li><a href="{% url 'favorite_page' %}">{% trans "Sevimlilar" %}</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>{% trans "Kategoriyalar" %}</h4>
+                <ul>
+                    {% for category in nav_categories|slice:":5" %}
+                        <li><a href="{{ category.get_absolute_url }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h4>{% trans "Hamkorlar" %}</h4>
+                <ul>
+                    <li><a href="{% url 'market_page' %}">{% trans "Market — oqim yaratish" %}</a></li>
+                    <li><a href="{% url 'statistika_page' %}">{% trans "Statistika" %}</a></li>
+                    <li><a href="{% url 'competition_page' %}">{% trans "Konkurs" %}</a></li>
+                    <li><a href="{% url 'payment_page' %}">{% trans "To'lovlar" %}</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© {% now "Y" %} Alijahon. {% trans "Barcha huquqlar himoyalangan." %}</span>
+            <div class="pay-methods" aria-label="{% trans 'To‘lov usullari' %}">
+                <span>{% trans "Naqd" %}</span><span>UZCARD</span><span>HUMO</span><span>Click</span><span>Payme</span>
+            </div>
+        </div>
+    </div>
+</footer>

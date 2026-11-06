@@ -1,0 +1,3 @@
+{# Fragment returned for "load more" requests: product cards plus the next page URL. #}
+{% for product in products %}{% include 'apps/products/_card.html' %}{% endfor %}
+<span data-page-meta data-next="{% if page_obj.has_next %}?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}{% endif %}"></span>

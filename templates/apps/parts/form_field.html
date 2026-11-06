@@ -1,0 +1,7 @@
+{# Renders one bound form field in the design-system markup. Usage: include with field=form.x label="…" #}
+<div class="field{% if field.errors %} has-error{% endif %}{% if span %} span-2{% endif %}">
+    <label class="label" for="{{ field.id_for_label }}">{{ label|default:field.label }}{% if field.field.required %} <span class="req">*</span>{% endif %}</label>
+    {{ field }}
+    {% if hint %}<span class="field-hint">{{ hint }}</span>{% endif %}
+    {% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}
+</div>

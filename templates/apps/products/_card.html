@@ -1,0 +1,51 @@
+{% load i18n custom_tags %}
+{# Product card. Expects `product` annotated by Product.objects.for_cards(); optional `remove_on_unlike`. #}
+<article class="p-card{% if not product.in_stock %} is-out{% endif %}" data-product-card>
+    <a class="p-media" href="{{ product.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy" decoding="async" width="600" height="600">
+    </a>
+    <div class="p-badges">
+        {% if product.discount_percent %}<span class="tag tag-accent">−{{ product.discount_percent }}%</span>{% endif %}
+        {% if product.is_featured %}<span class="tag tag-dark">{% trans "Tanlov" %}</span>{% endif %}
+        {% if not product.in_stock %}<span class="tag">{% trans "Tugagan" %}</span>{% endif %}
+    </div>
+    <form class="p-like-form" method="post" action="{% url 'add_favourite_page' product.pk %}" data-like data-like-id="{{ product.pk }}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="p-like{% if product.pk in favorite_ids %} is-liked{% endif %}" type="submit"
+                aria-pressed="{% if product.pk in favorite_ids %}true{% else %}false{% endif %}" aria-label="{% trans 'Sevimlilarga' %}">
+            <svg class="i i-sm"><use href="#i-heart"/></svg>
+        </button>
+    </form>
+    <div class="p-quick">
+        <a class="btn" href="{{ product.get_absolute_url }}" data-quick-view="{% url 'product_quick_view' product.slug %}">
+            <svg class="i i-sm"><use href="#i-eye"/></svg>{% trans "Tez ko'rish" %}
+        </a>
+    </div>
+    <div class="p-body">
+        <span class="p-cat">{{ product.category.name }}</span>
+        <h3 class="p-title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+        {% if product.rating_count %}
+            <div class="p-rating"><svg class="i"><use href="#i-star"/></svg><b>{{ product.rating_avg|floatformat:1 }}</b>
+                · {{ product.rating_count }} {% trans "sharh" %}{% if product.sold_count %} · {{ product.sold_count }} {% trans "sotildi" %}{% endif %}</div>
+        {% elif product.sold_count %}
+            <div class="p-rating">{{ product.sold_count }} {% trans "marta sotildi" %}</div>
+        {% endif %}
+        {% if product.is_low_stock %}<span class="p-stock low">{% blocktrans count n=product.quantity %}Faqat {{ n }} dona qoldi{% plural %}Faqat {{ n }} dona qoldi{% endblocktrans %}</span>{% endif %}
+        <div class="p-foot">
+            <div class="price">
+                {% if product.discount_percent %}<span class="price-was">{{ product.old_price|money }}</span>{% endif %}
+                <span class="price-now{% if product.discount_percent %} is-sale{% endif %}">{{ product.price|money }}</span>
+            </div>
+            <form method="post" action="{% url 'cart_add' %}" data-cart-add>
+                {% csrf_token %}
+                <input type="hidden" name="product" value="{{ product.pk }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="p-add" type="submit" {% if not product.in_stock %}disabled{% endif %}
+                        aria-label="{% blocktrans with name=product.name %}{{ name }} — savatga qo'shish{% endblocktrans %}">
+                    <svg class="i"><use href="#i-plus"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+</article>

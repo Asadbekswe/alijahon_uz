@@ -1,0 +1,14 @@
+{% load i18n %}
+{% with path=request.path %}
+<nav class="tabbar" aria-label="{% trans 'Asosiy navigatsiya' %}">
+    <a href="{% url 'main_base' %}" class="{% if path == '/' %}is-active{% endif %}"><svg class="i"><use href="#i-home"/></svg>{% trans "Bosh sahifa" %}</a>
+    <a href="{% url 'category_list' %}" class="{% if '/category/' in path %}is-active{% endif %}"><svg class="i"><use href="#i-grid"/></svg>{% trans "Katalog" %}</a>
+    <a href="{% url 'cart_page' %}" class="{% if '/cart/' in path or '/checkout/' in path %}is-active{% endif %}" data-cart-target>
+        <svg class="i"><use href="#i-bag"/></svg>{% trans "Savat" %}
+        <span class="badge-count" data-cart-count data-count="{{ cart_count }}">{{ cart_count }}</span>
+    </a>
+    <a href="{% url 'favorite_page' %}" class="{% if 'liked' in path %}is-active{% endif %}"><svg class="i"><use href="#i-heart"/></svg>{% trans "Sevimli" %}</a>
+    <a href="{% if user.is_authenticated %}{% url 'profile_page' %}{% else %}{% url 'login_page' %}{% endif %}"
+       class="{% if '/profile/' in path and 'liked' not in path or '/login/' in path %}is-active{% endif %}"><svg class="i"><use href="#i-user"/></svg>{% trans "Kabinet" %}</a>
+</nav>
+{% endwith %}

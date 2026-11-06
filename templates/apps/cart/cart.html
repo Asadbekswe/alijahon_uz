@@ -1,0 +1,69 @@
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Savat" %}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-head">
+        <h1>{% trans "Savat" %}{% if cart %} <span class="faint" style="font-weight:700" data-cart-items-count>{{ cart|length }}</span>{% endif %}</h1>
+    </div>
+    {% if cart.items %}
+        <div class="cart-layout" data-cart data-update-url="{% url 'cart_update' %}">
+            <div class="card card-body">
+                {% for item in cart.items %}
+                    <div class="cart-item" data-cart-item data-key="{{ item.key }}">
+                        <a href="{{ item.product.get_absolute_url }}"><img src="{{ item.product.image.url }}" alt="" width="104" height="104" loading="lazy"></a>
+                        <div>
+                            <span class="p-cat">{{ item.product.category.name }}</span>
+                            <h3><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
+                            <div class="meta">{{ item.unit_price|money }} / {% trans "dona" %}{% if item.stream %} · <span class="tag tag-accent" style="height:20px">{% trans "Maxsus narx" %}</span>{% endif %}</div>
+                            {% if item.exceeds_stock %}<div class="field-error mt-1">{% blocktrans with n=item.product.quantity %}Omborda faqat {{ n }} dona bor{% endblocktrans %}</div>{% endif %}
+                            <div class="controls">
+                                <form class="qty qty-sm" method="post" action="{% url 'cart_update' %}">
+                                    {% csrf_token %}<input type="hidden" name="key" value="{{ item.key }}">
+                                    <button type="button" data-qty-step="-1" aria-label="{% trans 'Kamaytirish' %}"><svg class="i i-sm"><use href="#i-minus"/></svg></button>
+                                    <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.quantity }}" data-cart-qty aria-label="{% trans 'Miqdor' %}">
+                                    <button type="button" data-qty-step="1" aria-label="{% trans 'Ko‘paytirish' %}"><svg class="i i-sm"><use href="#i-plus"/></svg></button>
+                                </form>
+                                <form method="post" action="{% url 'cart_update' %}">
+                                    {% csrf_token %}<input type="hidden" name="key" value="{{ item.key }}"><input type="hidden" name="action" value="remove">
+                                    <button class="remove-btn" type="submit" data-cart-remove><svg class="i i-sm"><use href="#i-trash"/></svg>{% trans "O'chirish" %}</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="line-total">
+                            <strong data-line-total>{{ item.total|money }}</strong>
+                            {% if item.unit_old_price %}<span class="price-was">{{ item.unit_old_price|money }}</span>{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <aside class="summary">
+                <div class="card card-body">
+                    <h2 style="font-size:var(--fs-lg)" class="mb-2">{% trans "Buyurtma" %}</h2>
+                    <div class="summary-rows">
+                        <div class="row-between"><span class="muted">{% trans "Mahsulotlar" %} (<span data-cart-items-count>{{ cart|length }}</span>)</span><span data-cart-gross>{{ cart.subtotal|add:cart.savings|money }}</span></div>
+                        <div class="row-between{% if not cart.savings %} hidden{% endif %}" data-savings-row><span class="muted">{% trans "Chegirma" %}</span><span class="text-success" data-cart-savings>− {{ cart.savings|money }}</span></div>
+                        <div class="row-between"><span class="muted">{% trans "Yetkazib berish" %}</span><span>{% trans "keyingi qadamda" %}</span></div>
+                    </div>
+                    <div class="summary-total"><span>{% trans "Jami" %}</span><strong data-cart-subtotal>{{ cart.subtotal|money }}</strong></div>
+                    <a class="btn btn-primary btn-lg btn-block mt-3{% if cart.has_stock_problems %} is-disabled{% endif %}" href="{% url 'checkout_page' %}">{% trans "Rasmiylashtirish" %}<svg class="i"><use href="#i-arrow-right"/></svg></a>
+                    <div class="summary-note"><svg class="i i-sm"><use href="#i-lock"/></svg>{% trans "Hech qanday oldindan to'lov yo'q. To'lov mahsulotni qabul qilganda." %}</div>
+                </div>
+            </aside>
+        </div>
+    {% else %}
+        <div class="card empty">
+            <span class="empty-icon"><svg class="i"><use href="#i-bag"/></svg></span>
+            <h2>{% trans "Savatingiz hozircha bo'sh" %}</h2>
+            <p>{% trans "Katalogdan yoqqan mahsulotni tanlang — u shu yerda paydo bo'ladi." %}</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'category_list' %}">{% trans "Katalogga o'tish" %}</a>
+        </div>
+    {% endif %}
+    {% if suggestions %}
+        <section class="section">
+            <div class="section-head"><div><h2>{% trans "Sizga yoqishi mumkin" %}</h2></div></div>
+            <div class="product-grid">{% for product in suggestions %}{% include 'apps/products/_card.html' %}{% endfor %}</div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

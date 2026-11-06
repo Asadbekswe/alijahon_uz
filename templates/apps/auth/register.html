@@ -1,0 +1,24 @@
+{% extends 'apps/base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Ro'yxatdan o'tish" %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+    {% trans "Bir daqiqada ro'yxatdan o'ting" as headline %}{% trans "Buyurtmalar tarixi, tezkor rasmiylashtirish va hamkorlik dasturi — barchasi bitta akkauntda." as sub %}
+    {% include 'apps/auth/_auth_art.html' with headline=headline sub=sub %}
+    <div class="auth-form">
+        <form class="auth-card" method="post" novalidate data-submit-once>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+            <h1>{% trans "Akkaunt yaratish" %}</h1>
+            <p>{% trans "Ma'lumotlaringiz faqat buyurtmalarni yetkazish uchun ishlatiladi" %}</p>
+            {% include 'apps/parts/form_field.html' with field=form.first_name label=_("Ismingiz") %}
+            {% include 'apps/parts/form_field.html' with field=form.phone %}
+            {% include 'apps/parts/form_field.html' with field=form.password1 hint=_("Kamida 8 ta belgi, faqat raqamlardan iborat bo'lmasin") %}
+            {% include 'apps/parts/form_field.html' with field=form.password2 %}
+            <button class="btn btn-primary btn-lg btn-block mt-3" type="submit">{% trans "Ro'yxatdan o'tish" %}</button>
+            <p class="auth-switch">{% trans "Akkauntingiz bormi?" %} <a class="link" href="{% url 'login_page' %}">{% trans "Kirish" %}</a></p>
+        </form>
+    </div>
+</div>
+{% endblock %}

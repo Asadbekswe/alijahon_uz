@@ -1,0 +1,39 @@
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Buyurtma" %} #{{ order.pk }}{% endblock %}
+{% block panel %}
+    <nav class="breadcrumbs"><a href="{% url 'order_page' %}">{% trans "Buyurtmalarim" %}</a><svg class="i"><use href="#i-chevron-right"/></svg><span>#{{ order.pk }}</span></nav>
+    <div class="panel-head"><div><h1>{% trans "Buyurtma" %} #{{ order.pk }}</h1><p>{{ order.created_at|custom_date }}, {{ order.created_at|time:"H:i" }}</p></div>
+        <span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></div>
+    <div class="detail-grid">
+        <div class="stack">
+            <div class="card card-body">
+                {% if is_terminated %}
+                    <div class="alert alert-warning"><svg class="i"><use href="#i-info"/></svg>{% trans "Buyurtma holati:" %} {{ order.get_status_display }}</div>
+                {% else %}
+                    <div class="timeline">{% for step in steps %}<span class="t-step{% if step.done %} is-done{% endif %}">{{ step.label }}</span>{% endfor %}</div>
+                {% endif %}
+            </div>
+            <div class="card card-body">
+                <div class="mini-item" style="grid-template-columns:88px 1fr auto">
+                    <img src="{{ order.product.image.url }}" alt="" style="width:88px;height:88px">
+                    <span><strong><a href="{{ order.product.get_absolute_url }}">{{ order.product.name }}</a></strong>
+                        <span class="muted text-sm">{{ order.price|money }} × {{ order.quantity }}</span></span>
+                    <b class="nowrap">{{ order.total|money }}</b>
+                </div>
+            </div>
+        </div>
+        <div class="card card-body">
+            <h2 style="font-size:var(--fs-md)" class="mb-2">{% trans "Yetkazib berish" %}</h2>
+            <dl class="dl">
+                <dt>{% trans "Qabul qiluvchi" %}</dt><dd>{{ order.full_name }}</dd>
+                <dt>{% trans "Telefon" %}</dt><dd>{{ order.phone_number|phone }}</dd>
+                <dt>{% trans "Manzil" %}</dt><dd>{{ order.region|default:"—" }}{% if order.district %}, {{ order.district }}{% endif %}{% if order.address %}, {{ order.address }}{% endif %}</dd>
+                {% if order.send_order_date %}<dt>{% trans "Yuborish sanasi" %}</dt><dd>{{ order.send_order_date|custom_date }}</dd>{% endif %}
+                <dt>{% trans "To'lov" %}</dt><dd>{% trans "Qabul qilganda" %}</dd>
+            </dl>
+            <div class="summary-total"><span>{% trans "Jami" %}</span><strong>{{ order.total|money }}</strong></div>
+            <a class="btn btn-block mt-2" href="{{ order.product.get_absolute_url }}">{% trans "Yana buyurtma qilish" %}</a>
+        </div>
+    </div>
+{% endblock %}

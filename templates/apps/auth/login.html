@@ -1,124 +1,24 @@
 {% extends 'apps/base.html' %}
-
-{% block title %}
-    Login page
-{% endblock %}
-
-{% block main_content %}
-    <div class="content_auth_form">
-        <div class="content_auth_form_group">
-            <div class="content_auth_form_group_input">
-                <div class="card">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="card-header bg-circle-shape bg-shape text-center p-2">
-                            <a class="font-sans-serif fw-bolder fs-4 z-index-1 position-relative link-light light"
-                               href="/">
-                                Alijahon
-                            </a>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="row flex-between-center">
-                                <div class="col-auto">
-                                    <h3>Kirish</h3>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="phone-mask">Telefon nomer</label>
-                                </div>
-                                <input type="text" name="phone" id="phone-mask" class="form-control" required>
-                                <span id="phone-error" style="color: red; display: none;">Telefon raqam to'liq kiritilishi zarur</span>
-                            </div>
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <label class="form-label" for="split-login-password">Parol</label>
-                                </div>
-                                <input class="form-control" name="password" id="split-login-password" type="password">
-                                <span id="password-error" style="color: red; display: none;">Parol kamida 8 belgidan iborat bo'lishi kerak va maxsus belgilarni o'z ichiga olishi zarur</span>
-                            </div>
-                            <div class="row flex-between-center">
-                                <div class="col-auto">
-                                    <div class="form-check mb-0">
-                                        <input class="form-check-input" autocomplete="on" type="checkbox"
-                                               id="split-checkbox">
-                                        <label class="form-check-label mb-0" for="split-checkbox">
-                                            Men qoidalar bilan tanishdim
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="col-auto">
-                                    <a class="fs--1" href="#">
-                                        Foydalanish shartlari
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <button class="btn btn-primary d-block w-100 mt-3" type="submit" name="submit">
-                                    Kirish
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+{% load i18n %}
+{% block title %}{% trans "Kirish" %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+    {% trans "Xush kelibsiz!" as headline %}{% trans "Buyurtmalaringizni kuzating, sevimlilarni saqlang va hamkorlik dasturida daromad oling." as sub %}
+    {% include 'apps/auth/_auth_art.html' with headline=headline sub=sub %}
+    <div class="auth-form">
+        <form class="auth-card" method="post" novalidate data-submit-once>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+            <h1>{% trans "Hisobga kirish" %}</h1>
+            <p>{% trans "Telefon raqamingiz va parolingizni kiriting" %}</p>
+            {% if form.non_field_errors %}<div class="alert alert-danger mb-2"><svg class="i"><use href="#i-alert"/></svg><div>{{ form.non_field_errors|join:" " }}</div></div>{% endif %}
+            {% include 'apps/parts/form_field.html' with field=form.phone %}
+            {% include 'apps/parts/form_field.html' with field=form.password %}
+            <button class="btn btn-primary btn-lg btn-block mt-3" type="submit">{% trans "Kirish" %}</button>
+            <p class="auth-switch">{% trans "Akkauntingiz yo'qmi?" %} <a class="link" href="{% url 'register_page' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">{% trans "Ro'yxatdan o'tish" %}</a></p>
+            {% if debug %}<div class="demo-creds">{% trans "Test akkauntlari README faylida ko'rsatilgan (faqat development)." %}</div>{% endif %}
+        </form>
     </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
-    <script src="https://unpkg.com/imask"></script>
-    <script>
-        $(function () {
-            $('#phone-mask').inputmask({
-                "mask": "+\\9\\98(99) 999-99-99",
-                "placeholder": "_",
-                showMaskOnHover: true,
-                showMaskOnFocus: true,
-                onBeforePaste: function (pastedValue) {
-                    return pastedValue.replace(/\D/g, '').slice(-9);
-                }
-            });
-        });
-        $("#search-input").autocomplete({
-            source: availableTags
-        });
-
-        function toggleValidationError(elementId, errorMessage, show = true) {
-            const errorElement = document.getElementById(elementId);
-            if (show) {
-                errorElement.innerText = errorMessage;
-                errorElement.style.display = 'block';
-                setTimeout(() => errorElement.style.display = 'none', 5000);
-            } else {
-                errorElement.style.display = 'none';
-            }
-        }
-
-        function validatePassword(inputId, errorElementId) {
-            const passwordValue = document.getElementById(inputId).value;
-            const passwordRegex = /^(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-
-            if (!passwordRegex.test(passwordValue)) {
-                toggleValidationError(errorElementId, 'Parol kamida 8 belgidan iborat bo\'lishi kerak va maxsus belgilarni o\'z ichiga olishi zarur');
-                return false;
-            } else {
-                toggleValidationError(errorElementId, '', false);  
-                return true;
-            }
-        }
-
-        document.getElementById('submit-btn').addEventListener('click', function (event) {
-            const isPasswordValid = validatePassword('split-login-password', 'password-error');
-
-            if (!isPasswordValid) {
-                event.preventDefault();  
-            }
-        });
-    </script>
-
-
+</div>
 {% endblock %}

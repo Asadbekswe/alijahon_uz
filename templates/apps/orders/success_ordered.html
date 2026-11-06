@@ -1,54 +1,37 @@
 {% extends 'apps/base.html' %}
-{% load static %}
-{% load humanize %}
-{% load custom_tags %}
-{% block title %}
-    Success Ordered page
-{% endblock %}
-{% block main_content %}
-    <div class="container text-center pb-5 card" style="margin-top: 80px;" bis_skin_checked="1">
-        <div class="card-body" style="margin-top: 30px" bis_skin_checked="1">
-        </div>
-        <img style="height: 100px; width:100px; margin-left:45%; margin-top: 30px"
-             src="{% static '/apps/assets/img/success_icon.png' %}"
-             alt="Green Success Image">
-        <h3 class="mt-4">Arizangiz qabul qilindi!</h3>
-        <p>Batafsil ma'lumot uchun operator yaqin vaqt ichida siz bilan aloqaga chiqadi.</p>
-        <p>Iltimos, telefoningiz yoqilgan holda bo'lsin!</p>
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">Mahsulot</th>
-                <th scope="col">Summa</th>
-                <th scope="col">Soni</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <th scope="col">{{ order.product.name }}</th>
-                <th scope="col">{% if order.stream  %}{{ order.stream.sale_price|intcomma }}{% else %}{{ order.product.price|intcomma }}{% endif %} sum</th>
-                <th scope="col">{{ '1' }}</th>
-            </tr>
-            <tr>
-                <th scope="col">Yetkazib berish</th>
-                <td>
-                    Toshkent Shahar: {{ site_settings.delivery_price_tashkent|remove_nulls|intcomma }} sum<br>
-                    Toshkent Viloyatlari: {{ site_settings.delivery_price_tashkent_region|remove_nulls|intcomma }} sum<br>
-                    Viloyatlar: {{ site_settings.delivery_price_regions|remove_nulls|intcomma }} sum
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div class="row" bis_skin_checked="1">
-            <div class="col-md-6" bis_skin_checked="1">
-            </div>
-            <div class="col-md-6 mt-3" bis_skin_checked="1">
-                <a href="{% url 'main_base' %}" class="btn btn-primary w-50">Boshqa mahsulotlar</a>
-            </div>
-        </div>
+{% load i18n custom_tags %}
+{% block title %}{% trans "Buyurtma qabul qilindi" %}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:760px">
+    <div class="success-hero">
+        <span class="success-check"><svg class="i"><use href="#i-check"/></svg></span>
+        <h1>{% trans "Rahmat! Buyurtmangiz qabul qilindi" %}</h1>
+        <p>{% blocktrans with name=order.full_name phone=order.phone_number|phone %}{{ name }}, operatorimiz tez orada {{ phone }} raqamiga qo'ng'iroq qilib, buyurtmani tasdiqlaydi.{% endblocktrans %}</p>
     </div>
+    <div class="card card-body">
+        <div class="row-between mb-2 wrap">
+            <h2 style="font-size:var(--fs-md)">{% trans "Buyurtma" %} {% for o in orders %}#{{ o.pk }}{% if not forloop.last %}, {% endif %}{% endfor %}</h2>
+            <span class="status status-new">{% trans "Yangi" %}</span>
+        </div>
+        <div class="timeline mb-3">
+            <span class="t-step is-done">{% trans "Qabul qilindi" %}</span><span class="t-step">{% trans "Tasdiqlanadi" %}</span>
+            <span class="t-step">{% trans "Yo'lda" %}</span><span class="t-step">{% trans "Yetkazildi" %}</span>
+        </div>
+        <div class="mini-items">
+            {% for o in orders %}
+                <div class="mini-item">
+                    <span class="thumb"><img src="{{ o.product.image.url }}" alt="" width="56" height="56"><span>{{ o.quantity }}</span></span>
+                    <span><strong>{{ o.product.name }}</strong><span class="muted text-xs">{{ o.price|money }} × {{ o.quantity }}</span></span>
+                    <b class="nowrap">{{ o.total|money }}</b>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="summary-total"><span>{% trans "Jami (yetkazishsiz)" %}</span><strong>{{ total|money }}</strong></div>
+        {% if order.region %}<p class="text-sm muted mt-2"><svg class="i i-sm" style="display:inline;vertical-align:-3px"><use href="#i-pin"/></svg> {{ order.region }}{% if order.district %}, {{ order.district }}{% endif %}{% if order.address %}, {{ order.address }}{% endif %}</p>{% endif %}
+    </div>
+    <div class="row mt-3 wrap" style="justify-content:center">
+        <a class="btn btn-dark btn-lg" href="{% url 'category_list' %}">{% trans "Xaridni davom ettirish" %}</a>
+        {% if user.is_authenticated %}<a class="btn btn-lg" href="{% url 'order_page' %}">{% trans "Buyurtmalarim" %}</a>{% endif %}
+    </div>
+</div>
 {% endblock %}
-
-
-
-

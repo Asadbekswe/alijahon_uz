@@ -2,22 +2,30 @@ from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import View
 
+from apps.models import User
+
 
 class GetObjectMixins(LoginRequiredMixin, View):
 
     def get_object(self, queryset=None):
         return self.request.user
-#
-#
-# class IsAuthOperatorMixins(LoginRequiredMixin, UserPassesTestMixin):
-#     #
-#     # def test_func(self):
-#     #     return self.request.user.type == 'Operator'
-#     #
-#     # def handle_no_permission(self):
-#     #     redirect('login_page')
-#     #     return super().handle_no_permission()
-#     pass
+
+
+class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Restrict a view to the given user types. Superusers always pass."""
+    allowed_types = ()
+
+    def test_func(self):
+        user = self.request.user
+        return user.is_superuser or user.type in self.allowed_types
+
+
+class OperatorRequiredMixin(RoleRequiredMixin):
+    allowed_types = (User.Type.OPERATOR, User.Type.MANAGER, User.Type.ADMIN)
+
+
+class CurrierRequiredMixin(RoleRequiredMixin):
+    allowed_types = (User.Type.CURRIER, User.Type.MANAGER, User.Type.ADMIN)
 
 
 def switch_lang_code(path, language):

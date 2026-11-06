@@ -1,14 +1,9 @@
 {% extends "admin/login.html" %}
-
-{% block extrastyle %}
+{% load i18n %}
+{% block extrastyle %}{{ block.super }}
+<style>#login-form .form-row label{display:block;margin-bottom:6px}</style>
+{% endblock %}
+{% block content %}
+    <p class="login-hint">{% trans "Telefon raqam (masalan 901234567) va parol bilan kiring." %}</p>
     {{ block.super }}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#id_username').inputmask({
-                "mask": "+\\9\\98(99) 999-99-99"
-            });
-        });
-    </script>
 {% endblock %}

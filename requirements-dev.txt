@@ -1,0 +1,37 @@
+asgiref==3.13.0
+    # via
+    #   -c requirements.txt
+    #   django
+django==5.2.19
+    # via
+    #   -c requirements.txt
+    #   django-debug-toolbar
+django-debug-toolbar==8.0.0
+    # via -r requirements-dev.in
+flake8==7.5.0
+    # via -r requirements-dev.in
+iniconfig==2.3.1
+    # via pytest
+mccabe==0.7.0
+    # via flake8
+packaging==26.3
+    # via pytest
+pluggy==1.7.0
+    # via pytest
+pycodestyle==2.15.0
+    # via flake8
+pyflakes==4.1.0
+    # via flake8
+pygments==2.21.0
+    # via pytest
+pytest==9.2.0
+    # via
+    #   -r requirements-dev.in
+    #   pytest-django
+pytest-django==4.14.0
+    # via -r requirements-dev.in
+sqlparse==0.6.1
+    # via
+    #   -c requirements.txt
+    #   django
+    #   django-debug-toolbar

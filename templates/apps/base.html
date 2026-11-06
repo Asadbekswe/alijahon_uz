@@ -1,159 +1,74 @@
-{% load static %}
-{% load humanize %}
-{% load i18n %}
-<!DOCTYPE html>
-<html lang="en-US" dir="ltr">
-
+{% load static i18n custom_tags %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-
-
-    <!-- ===============================================-->
-    <!--    Document Title-->
-    <!-- ===============================================-->
-    <title>{% block title %}{% endblock %}</title>
-
-
-    <!-- ===============================================-->
-    <!--    Favicons-->
-    <!-- ===============================================-->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apps/assets/img/favicons/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'apps/assets/img/favicons/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'apps/assets/img/favicons/favicon-16x16.png' %}">
-    <link rel="shortcut icon" type="image/x-icon" href="{% static 'apps/assets/img/favicons/favicon.ico' %}">
-    <link rel="manifest" href="{% static 'apps/assets/img/favicons/manifest.json' %}">
-    <meta name="msapplication-TileImage" content="{% static 'apps/assets/img/favicons/mstile-150x150.png' %}">
-    <meta name="theme-color" content="#ffffff">
-    <script src="{% static 'apps/assets/js/config.js' %}"></script>
-    <script src="{% static 'apps/vendors/overlayscrollbars/OverlayScrollbars.min.js' %}"></script>
-
-
-    <!--===============================================-->
-    <!--Stylesheets-->
-    <!--===============================================-->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700%7cPoppins:300,400,500,600,700,800,900&amp;display=swap"
-          rel="stylesheet">
-    <link href="{% static 'apps/vendors/overlayscrollbars/OverlayScrollbars.min.css' %}" rel="stylesheet">
-    <link href="{% static 'apps/assets/css/theme-rtl.min.css' %}" rel="stylesheet" id="style-rtl">
-    <link href="{% static 'apps/assets/css/theme.min.css' %}" rel="stylesheet" id="style-default">
-    <link href="{% static 'apps/assets/css/user-rtl.min.css' %}" rel="stylesheet" id="user-style-rtl">
-    <link href="{% static 'apps/assets/css/user.min.css' %}" rel="stylesheet" id="user-style-default">
-    <style>
-        .search-results-container {
-            position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            max-height: 200px;
-            overflow-y: auto;
-            width: 100%;
-            margin-top: 5px;
-            transition: opacity 0.3s ease;
-        }
-
-        .search-result-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-            color: #333;
-        }
-
-        .search-result-item:hover {
-            background: #f0f0f0;
-            color: #007bff;
-        }
-
-        .no-results {
-            padding: 12px 15px;
-            color: #999;
-            text-align: center;
-        }
-    </style>
-
-
-    <script>
-        var isRTL = JSON.parse(localStorage.getItem('isRTL'));
-        if (isRTL) {
-            var linkDefault = document.getElementById('style-default');
-            var userLinkDefault = document.getElementById('user-style-default');
-            linkDefault.setAttribute('disabled', true);
-            userLinkDefault.setAttribute('disabled', true);
-            document.querySelector('html').setAttribute('dir', 'rtl');
-        } else {
-            var linkRTL = document.getElementById('style-rtl');
-            var userLinkRTL = document.getElementById('user-style-rtl');
-            linkRTL.setAttribute('disabled', true);
-            userLinkRTL.setAttribute('disabled', true);
-        }
-    </script>
-    {% block custom_css %}
-    {% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{% block title %}{% trans "Alijahon — ishonchli onlayn do'kon" %}{% endblock %}{% block title_suffix %} · Alijahon{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{% trans "Alijahon — elektronika, maishiy texnika, go'zallik va uy uchun mahsulotlar. O'zbekiston bo'ylab yetkazib berish, to'lov qabul qilganda." %}{% endblock %}">
+    <meta name="theme-color" content="#15171c">
+    <link rel="icon" href="{% static 'store/img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'store/css/app.css' %}">
+    {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}"
+      data-auth="{{ user.is_authenticated|yesno:'1,0' }}"
+      data-login-url="{% url 'login_page' %}"
+      data-cart-url="{% url 'cart_page' %}">
+<a class="skip-link" href="#main">{% trans "Asosiy kontentga o'tish" %}</a>
+{% include 'apps/parts/_icons.html' %}
 
-
-<!-- ===============================================-->
-<!-- Main Content-->
-<!--===============================================-->
-
-<main class="main" id="top">
-    <div class="container" data-layout="container" bis_skin_checked="1">
-        <script>
-            var isFluid = JSON.parse(localStorage.getItem('isFluid'));
-            if (isFluid) {
-                var container = document.querySelector('[data-layout]');
-                container.classList.remove('container');
-                container.classList.add('container-fluid');
-            }
-        </script>
-
-        <nav class="navbar navbar-light navbar-vertical navbar-expand-xl">
-            <script>
-                var navbarStyle = localStorage.getItem("navbarStyle");
-                if (navbarStyle && navbarStyle !== 'transparent') {
-                    document.querySelector('.navbar-vertical').classList.add(`navbar-${navbarStyle}`);
-                }
-            </script>
-            {% include 'apps/parts/_sidebar.html' %}
-        </nav>
-        <div class="content" bis_skin_checked="1">
-            {% include 'apps/parts/_header.html' %}
-            {% block main_content %}
-            {% endblock %}
-            {% include 'apps/parts/_footer.html' %}
-        </div>
-    </div>
-</main>
-
-<!-- ===============================================-->
-<!--End of Main Content-->
-<!--===============================================-->
-
-
-<!--===============================================-->
-<!-- JavaScripts-->
-<!--===============================================-->
-<script src="{% static 'apps/vendors/popper/popper.min.js' %}"></script>
-<script src="{% static 'apps/vendors/bootstrap/bootstrap.min.js' %}"></script>
-<script src="{% static 'apps/vendors/anchorjs/anchor.min.js' %}"></script>
-<script src="{% static 'apps/vendors/is/is.min.js' %}"></script>
-<script src="{% static 'apps/vendors/echarts/echarts.min.js' %}"></script>
-<script src="{% static 'apps/vendors/fontawesome/all.min.js' %}"></script>
-<script src="{% static 'apps/vendors/lodash/lodash.min.js' %}"></script>
-<script src="{% static 'apps/vendors/list.js/list.min.js' %}"></script>
-<script src="{% static 'apps/assets/js/theme.js' %}"></script>
-{% block custom_js %}
+{% block header %}
+    {% include 'apps/parts/header.html' %}
 {% endblock %}
 
+<main id="main">
+    {% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+    {% include 'apps/parts/footer.html' %}
+{% endblock %}
+
+{% include 'apps/parts/tabbar.html' %}
+
+<div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog">
+        <button class="icon-btn modal-close" type="button" data-modal-close aria-label="{% trans 'Yopish' %}">
+            <svg class="i"><use href="#i-x"/></svg>
+        </button>
+        <div class="modal-content"></div>
+    </div>
+</div>
+<div class="toasts" aria-live="polite"></div>
+{% for message in messages %}
+    <span hidden data-flash="{{ message }}" data-level="{{ message.tags|default:'info' }}"></span>
+{% endfor %}
+
+<script>
+    window.APP_I18N = {
+        currency: "so'm",
+        close: "{% trans 'Yopish' %}",
+        noResults: "{% trans 'Hech narsa topilmadi' %}",
+        allResults: "{% trans 'Barcha natijalarni ko‘rish' %}",
+        toCart: "{% trans 'Savatga o‘tish' %}",
+        error: "{% trans 'Xatolik yuz berdi' %}",
+        network: "{% trans 'Tarmoq xatosi. Qayta urinib ko‘ring.' %}",
+        liked: "{% trans 'Sevimlilarga qo‘shildi' %}",
+        unliked: "{% trans 'Sevimlilardan olib tashlandi' %}",
+        stockLimit: "{% trans 'Omborda faqat shuncha mavjud' %}",
+        chooseDistrict: "{% trans 'Tumanni tanlang' %}",
+        chooseRegion: "{% trans 'Viloyatni tanlang' %}",
+        phoneInvalid: "{% trans 'Telefon raqamni to‘liq kiriting' %}",
+        copied: "{% trans 'Nusxalandi' %}",
+        free: "{% trans 'Bepul' %}",
+        imageTooBig: "{% trans 'Rasm hajmi 5 MB dan oshmasligi kerak' %}"
+    };
+</script>
+<script src="{% static 'store/js/app.js' %}" defer></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
-
-

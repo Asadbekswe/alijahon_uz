@@ -1,189 +1,46 @@
 {% extends 'apps/operators/operator_base.html' %}
-{% load i18n %}
-{% load custom_tags %}
-{% load humanize %}
-{% load static %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Operator paneli" %}{% endblock %}
 {% block operator_main %}
-
-    <div class="form-group">
-        <label for="id_product"><strong>{% trans "Mahsulot:" %}</strong></label>
-        <select name="product" id="id_product" class="form-control" multiple required>
-            {% for product in products %}
-                <option value="{{ product.id }}">{{ product.name }}</option>
+    <div class="panel-head">
+        <div><h1>{% for value, label, count in tabs %}{% if value == active_status %}{{ label }} <span class="faint">{{ count }}</span>{% endif %}{% endfor %}</h1>
+            <p>{% trans "Sizga biriktirilgan va hali hech kim olmagan buyurtmalar" %}</p></div>
+        <form class="input-group" method="get" style="min-width:260px">
+            <svg class="i"><use href="#i-search"/></svg>
+            <input class="input" type="search" name="q" value="{{ search }}" placeholder="{% trans 'ID, ism yoki telefon' %}">
+        </form>
+    </div>
+    {% if orders %}
+        <div class="work-board">
+            {% for order in orders %}
+                <article class="work-card">
+                    <div>
+                        <h3>#{{ order.pk }} · {{ order.product.name }}
+                            {% if order.operator %}<span class="tag{% if order.operator_id == user.pk %} tag-info{% endif %}">{% if order.operator_id == user.pk %}{% trans "Sizda" %}{% else %}{% trans "Operator" %} #{{ order.operator_id }}{% endif %}</span>
+                            {% else %}<span class="tag tag-accent">{% trans "Bo'sh" %}</span>{% endif %}</h3>
+                        <div class="meta">
+                            <span><b>{{ order.full_name }}</b> · {{ order.phone_number|phone }}</span>
+                            <span>{% trans "Narx" %}: <b>{{ order.price|money }}</b> × {{ order.quantity }}</span>
+                            <span>{% trans "Hudud" %}: <b>{{ order.region|default:"—" }}{% if order.district %}, {{ order.district }}{% endif %}</b></span>
+                            {% if order.stream %}<span>{% trans "Hamkor" %}: <b>#{{ order.referral_user_id }}</b></span>{% endif %}
+                            <span>{{ order.created_at|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        {% if order.comment_operator %}<p class="text-sm muted mt-1"><svg class="i i-sm" style="display:inline;vertical-align:-3px"><use href="#i-info"/></svg> {{ order.comment_operator }}</p>{% endif %}
+                    </div>
+                    <div class="actions">
+                        <a class="btn btn-sm" href="tel:+998{{ order.phone_number }}"><svg class="i i-sm"><use href="#i-phone"/></svg>{% trans "Qo'ng'iroq" %}</a>
+                        {% if order.operator_id == user.pk or user.is_superuser %}
+                            <a class="btn btn-sm btn-dark" href="{% url 'operator_detail' order.pk %}">{% trans "Ochish" %}</a>
+                        {% elif not order.operator_id %}
+                            <form method="post" action="{% url 'operator_claim' order.pk %}">{% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">{% trans "Qabul qilish" %}</button></form>
+                        {% endif %}
+                    </div>
+                </article>
             {% endfor %}
-        </select>
-        {% if form.product.errors %}
-            <div class="text-danger">
-                {{ form.product.errors }}
-            </div>
-        {% endif %}
-    </div>
-    <div class="row form-section">
-        <div class="col-md-6 mb-3">
-            <label for="region">{% trans "Viloyat" %}</label>
-            <select class="form-control" id="region" name="region" required onchange="getDistricts(this.value)">
-                <option value="" disabled selected>{% trans "Viloyat tanlang" %}</option>
-                {% for region in regions %}
-                    <option value="{{ region.id }}">{{ region.name }}</option>
-                {% endfor %}
-            </select>
-            {% if form.region.errors %}
-                <small class="form-text text-danger">{{ form.region.errors }}</small>
-            {% endif %}
         </div>
-
-        <div class="col-md-6 mb-3">
-            <label for="district_id">{% trans "Viloyat" %}</label>
-            <select name="district" class="form-control" id="district_id">
-                <option value="" selected disabled>{% trans "Tuman tanlang" %}</option>
-                {% if district.id %}
-                    <option value="{{ district.id }}" selected>{{ district.name }}</option>
-                {% endif %}
-            </select>
-            {% if form.district.errors %}
-                <div class="text-danger">
-                    {{ form.district.errors }}
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="product"><strong>{% trans "Mahsulot" %}:</strong></label>
-        <input type="text" class="form-control" id="product" name="product"
-               placeholder="{% trans 'Mahsulot nomi' %}"
-               value="{{ form.product.value|default_if_none:'' }}" required>
-        {% if form.product.errors %}
-            <div class="text-danger">
-                {{ form.product.errors }}
-            </div>
-        {% endif %}
-    </div>
-
-    <button type="submit" class="btn btn-primary mt-3">{% trans "Saqlash" %}</button>
-    {% if request.path|spliter == 'delivering' %}
-        <button type="submit" name="action" value="currier"
-                class="btn btn-secondary mt-3 ml-2">{% trans "Courier" %}</button>
-        <div class="form-check mt-3">
-            <input type="checkbox" class="form-check-input" id="toggleAll" onclick="toggleAll(this)">
-            <label class="form-check-label" for="toggleAll">{% trans "Toggle All" %}</label>
-        </div>
+        {% if search %}{% with querystring="q="|add:search %}{% include 'apps/parts/pagination.html' %}{% endwith %}{% else %}{% include 'apps/parts/pagination.html' %}{% endif %}
+    {% else %}
+        <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-inbox"/></svg></span><h2>{% trans "Bu bo'limda buyurtma yo'q" %}</h2>
+            <p>{% trans "Yangi buyurtmalar kelib tushganda shu yerda paydo bo'ladi." %}</p></div>
     {% endif %}
-
-    {% for order in orders %}
-        <div class="card border-dark mt-5">
-            <div class="card-body position-relative">
-                {% if request.path|spliter in 'new' or request.path|spliter in 'ready' or request.path|spliter in 'delivering' or request.path|spliter in 'delivered' or request.path|spliter in 'cant_phone' or request.path|spliter in 'broken' or request.path|spliter in 'cancelled' or request.path|spliter in 'archived' or request.path|spliter in 'all'%}
-                    <span class="badge {% if request.user.pk == order.operator.pk %}badge-pill badge-success
-                        {% elif order.operator is None %}badge-pill btn-primary
-                        {% else %}alert-danger
-                        {% endif %} position-absolute"
-                          style="top: 10px; right: 10px; font-size: 1.2rem;">
-                                    #{{ order.operator.pk|default_if_none:'Nomalum' }}
-                                </span>
-                {% endif %}
-                <h2 class="card-title">{{ order.product.name }}{% if order.stream %}
-                    - {{ order.stream.sale_price|intcomma }}{% else %}
-                    {{ order.product.price|intcomma }}{% endif %}</h2>
-                <h3 class="card-subtitle mb-2 text-danger">{% trans "ZAKAZ ID:" %} #{{ order.pk }}</h3>
-                <ul class="list-unstyled text-muted">
-                    <li>
-                        <strong>{% trans "Reklama tarqatuvchi ID:" %}</strong> {{ order.ref_user.id }}
-                    </li>
-                    <li><strong>{% trans "Client:" %}</strong> {{ order.full_name }}
-                        +998{{ order.phone_number|slice:'1'|add:'XXXXXXXX' }}</li>
-                    <li>
-                        <strong>{% trans "Manzil" %}:</strong> {{ order.region.name|default_if_none:" " }}
-                    </li>
-                    <li>
-                        <strong>{% trans "Narxi" %}:</strong>
-                        {% if order.stream %}{{ order.stream.sale_price|intcomma }}{% else %}
-                            {{ order.product.price|intcomma }}{% endif %} sum
-                    </li>
-                    <li><strong>{% trans "Soni:" %}</strong> {{ order.quantity }} ta</li>
-                    <li><strong>{% trans "Vaqti:" %}</strong> {{ order.created_at|date:"Y-m-d H:i" }}
-                    </li>
-                    <li>
-                        <strong>{% trans "Yangilangan vaqti:" %}</strong> {{ order.updated_at|date:"Y-m-d H:i" }}
-                    </li>
-                    <li><strong>{% trans "Holati:" %}</strong> {{ order.status.title }}</li>
-                </ul>
-                {% if order.operator.pk == request.user.pk or order.operator is None %}
-                    <a href="{% url 'operator_detail' order.pk %}"
-                       class="btn btn-primary mt-2">{% trans "Qabul qilish" %}</a>
-                    <a href="" class="btn btn-warning mt-2 ml-2"
-                       style="position: absolute; right: 10px;">{% trans "Hold" %}</a>
-                {% endif %}
-            </div>
-        </div>
-    {% endfor %}
-    {% include 'apps/parts/_operators_pagination.html' %}
-
-    <script>
-
-        function getDistricts(regionId) {
-            const districtSelect = document.getElementById('district_id');
-            districtSelect.innerHTML = '<option value="" selected disabled>Shahar/Tuman tanlang</option>';
-
-            if (regionId) {
-                fetch(`/get-districts/${regionId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(district => {
-                            const option = document.createElement('option');
-                            option.value = district.id;
-                            option.text = district.name;
-                            districtSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.log('Error:', error));
-            }
-        }
-
-        function toggleAll(source) {
-            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = source.checked;
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            if ($.fn.multipleSelect) {
-                $('select[multiple]').multipleSelect({
-                    filter: true,
-                    width: '100%'
-                });
-            } else {
-                console.warn('multipleSelect plugin is not loaded.');
-            }
-        });
-    </script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'admin/js/multiple-select.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'admin/css/multiple-select.css' %}"/>
-
-    <style>
-        select.form-control, select.form-select {
-            width: 100%;
-        }
-
-        .badge-success {
-            background-color: chartreuse;
-            color: #fff;
-            padding: 10px;
-            border-radius: 50%;
-        }
-
-        .btn-warning {
-            background-color: orange;
-            border-color: orange;
-            color: #fff;
-        }
-
-        .btn-warning:hover {
-            background-color: darkorange;
-            border-color: darkorange;
-        }
-    </style>
 {% endblock %}

@@ -1,43 +1,19 @@
-{% extends 'apps/base.html' %}
-{% load humanize %}
-{% load custom_tags %}
-{% block title %}
-    Order page
-{% endblock %}
-
-
-{% block main_content %}
-    <div class="card mb-3" bis_skin_checked="1">
-        <div class="card-body" bis_skin_checked="1">
-            <div class="container" style="padding-top: 10px;" bis_skin_checked="1">
-                <div class="content_cart" bis_skin_checked="1">
-                    <div class="content_single-product-nouser" bis_skin_checked="1">
-                        <div class="row" bis_skin_checked="1">
-                            <div class="col-md-12" bis_skin_checked="1">
-                                {% for order in orders %}
-                                    <div class="order-item">
-                                        <h3>{{ order.product.name }}</h3>
-                                        <small>Mahsulot narxi: {{ order.product.price | intcomma }} sum</small>
-                                        <p>Soni: {{ order.quantity }}</p>
-                                        <p>Sana: {{ order.created_at|custom_date }}</p>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Buyurtmalarim" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "Buyurtmalarim" %}</h1><p>{% trans "Barcha xaridlaringiz va ularning holati" %}</p></div></div>
+    <div class="status-tabs">
+        <a class="chip{% if not active_status %} is-active{% endif %}" href="{% url 'order_page' %}">{% trans "Hammasi" %}</a>
+        {% for value, label in statuses %}<a class="chip{% if active_status == value %} is-active{% endif %}" href="?status={{ value }}">{{ label }}</a>{% endfor %}
     </div>
-    <style>
-        .order-item {
-            border: 2px solid skyblue;  
-            border-radius: 8px;         
-            padding: 15px;              
-            margin-bottom: 15px;        
-        }
-
-
-    </style>
+    {% if orders %}
+        <div class="list-cards">{% for order in orders %}{% include 'apps/orders/_order_card.html' %}{% endfor %}</div>
+        {% include 'apps/parts/pagination.html' %}
+    {% else %}
+        <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-package"/></svg></span>
+            <h2>{% if active_status %}{% trans "Bu holatda buyurtmalar yo'q" %}{% else %}{% trans "Hali buyurtma bermagansiz" %}{% endif %}</h2>
+            <p>{% trans "Yoqqan mahsulotni savatga qo'shing va bir necha daqiqada buyurtma bering." %}</p>
+            <a class="btn btn-primary" href="{% url 'category_list' %}">{% trans "Katalogga o'tish" %}</a></div>
+    {% endif %}
 {% endblock %}
-

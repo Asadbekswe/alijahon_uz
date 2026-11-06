@@ -1,0 +1,116 @@
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% if category %}{{ category.name }}{% elif filters.q %}«{{ filters.q }}» — {% trans "qidiruv" %}{% else %}{% trans "Katalog" %}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-head">
+        <nav class="breadcrumbs" aria-label="{% trans 'Yo‘l' %}">
+            <a href="{% url 'main_base' %}">{% trans "Bosh sahifa" %}</a><svg class="i"><use href="#i-chevron-right"/></svg>
+            {% if category %}<a href="{% url 'category_list' %}">{% trans "Katalog" %}</a><svg class="i"><use href="#i-chevron-right"/></svg><span>{{ category.name }}</span>
+            {% else %}<span>{% trans "Katalog" %}</span>{% endif %}
+        </nav>
+        <h1>{% if category %}{{ category.name }}{% elif filters.q %}«{{ filters.q }}»{% else %}{% trans "Barcha mahsulotlar" %}{% endif %}</h1>
+        {% if category.description %}<p>{{ category.description }}</p>{% endif %}
+    </div>
+
+    <div class="chip-row mb-3">
+        <a class="chip{% if not category %} is-active{% endif %}" href="{% url 'category_list' %}{% query_replace %}">{% trans "Hammasi" %}</a>
+        {% for cat in categories %}
+            <a class="chip{% if category.pk == cat.pk %} is-active{% endif %}" href="{{ cat.get_absolute_url }}{% query_replace %}">{{ cat.name }} <span class="chip-count">{{ cat.product_count }}</span></a>
+        {% endfor %}
+    </div>
+
+    <div class="catalog-layout">
+        <form class="filters" method="get" id="filters">
+            <div class="filters-mobile-head">
+                <strong>{% trans "Filtrlar" %}</strong>
+                <button class="icon-btn" type="button" data-filters-toggle aria-label="{% trans 'Yopish' %}"><svg class="i"><use href="#i-x"/></svg></button>
+            </div>
+            {% if filters.q %}<input type="hidden" name="q" value="{{ filters.q }}">{% endif %}
+            <input type="hidden" name="sort" value="{{ filters.sort }}">
+            <div class="filter-block">
+                <h3>{% trans "Kategoriya" %}</h3>
+                <ul class="filter-list">
+                    <li><a class="{% if not category %}is-active{% endif %}" href="{% url 'category_list' %}{% query_replace %}">{% trans "Barcha kategoriyalar" %}</a></li>
+                    {% for cat in categories %}
+                        <li><a class="{% if category.pk == cat.pk %}is-active{% endif %}" href="{{ cat.get_absolute_url }}{% query_replace %}">{{ cat.name }}<span>{{ cat.product_count }}</span></a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="filter-block">
+                <h3>{% trans "Narx, so'm" %}</h3>
+                <div class="price-range">
+                    <input class="input" type="number" name="min_price" min="0" step="1000" inputmode="numeric" placeholder="{% trans 'dan' %}" value="{{ filters.min_price|default_if_none:'' }}" aria-label="{% trans 'Minimal narx' %}">
+                    <span class="faint">—</span>
+                    <input class="input" type="number" name="max_price" min="0" step="1000" inputmode="numeric" placeholder="{% trans 'gacha' %}" value="{{ filters.max_price|default_if_none:'' }}" aria-label="{% trans 'Maksimal narx' %}">
+                </div>
+                <div class="price-presets">
+                    <button type="button" data-price-preset="-200000">{% trans "200 mingacha" %}</button>
+                    <button type="button" data-price-preset="200000-500000">200–500 {% trans "ming" %}</button>
+                    <button type="button" data-price-preset="500000-1000000">0.5–1 {% trans "mln" %}</button>
+                    <button type="button" data-price-preset="1000000-">{% trans "1 mln dan" %}</button>
+                </div>
+            </div>
+            <div class="filter-block">
+                <h3>{% trans "Mavjudlik" %}</h3>
+                <div class="stack" style="--stack:12px">
+                    <label class="check"><input type="checkbox" name="in_stock" value="1" {% if filters.in_stock %}checked{% endif %} data-autosubmit> {% trans "Faqat omborda borlari" %}</label>
+                    <label class="check"><input type="checkbox" name="on_sale" value="1" {% if filters.on_sale %}checked{% endif %} data-autosubmit> {% trans "Chegirmadagilar" %}</label>
+                </div>
+            </div>
+            <button class="btn btn-dark btn-block" type="submit">{% trans "Filtrni qo'llash" %}</button>
+            {% if active_filter_count %}<a class="btn btn-ghost btn-block" href="{{ request.path }}{% if filters.q %}?q={{ filters.q|urlencode }}{% endif %}">{% trans "Tozalash" %}</a>{% endif %}
+        </form>
+
+        <section aria-label="{% trans 'Mahsulotlar' %}">
+            <div class="catalog-toolbar">
+                <div class="row">
+                    <button class="btn btn-sm filters-toggle" type="button" data-filters-toggle>
+                        <svg class="i i-sm"><use href="#i-sliders"/></svg>{% trans "Filtrlar" %}{% if active_filter_count %} · {{ active_filter_count }}{% endif %}
+                    </button>
+                    <span class="count">{% blocktrans count n=paginator.count %}{{ n }} ta mahsulot{% plural %}{{ n }} ta mahsulot{% endblocktrans %}</span>
+                </div>
+                <form method="get" class="row">
+                    {% for key, value in request.GET.items %}{% if key != 'sort' and key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+                    <label class="text-sm muted hide-sm" for="sort">{% trans "Saralash:" %}</label>
+                    <select class="select" id="sort" name="sort" data-autosubmit>
+                        {% for key, label in sort_options %}<option value="{{ key }}" {% if key == filters.sort %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                    </select>
+                </form>
+            </div>
+
+            {% if active_filter_count %}
+                <div class="active-filters">
+                    {% if filters.min_price is not None %}<a href="{% query_replace min_price='' %}">{% trans "dan" %} {{ filters.min_price|money }} <svg class="i i-sm"><use href="#i-x"/></svg></a>{% endif %}
+                    {% if filters.max_price is not None %}<a href="{% query_replace max_price='' %}">{% trans "gacha" %} {{ filters.max_price|money }} <svg class="i i-sm"><use href="#i-x"/></svg></a>{% endif %}
+                    {% if filters.in_stock %}<a href="{% query_replace in_stock='' %}">{% trans "Omborda bor" %} <svg class="i i-sm"><use href="#i-x"/></svg></a>{% endif %}
+                    {% if filters.on_sale %}<a href="{% query_replace on_sale='' %}">{% trans "Chegirma" %} <svg class="i i-sm"><use href="#i-x"/></svg></a>{% endif %}
+                </div>
+            {% endif %}
+
+            {% if products %}
+                <div class="product-grid cols-3" id="catalog-grid">
+                    {% for product in products %}{% include 'apps/products/_card.html' %}{% endfor %}
+                </div>
+                {% if page_obj.has_next %}
+                    <div class="load-more-wrap">
+                        <span class="text-sm muted">{% trans "Ko'rsatildi" %} <b data-shown-count>{{ page_obj.end_index }}</b> / {{ paginator.count }}</span>
+                        <div class="progress"><span data-progress data-total="{{ paginator.count }}" style="width:{{ page_obj.end_index|percent_of:paginator.count }}%"></span></div>
+                        <a class="btn" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" data-load-more data-target="#catalog-grid"
+                           data-next="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Yana ko'rsatish" %}</a>
+                    </div>
+                {% endif %}
+                {% include 'apps/parts/pagination.html' %}
+            {% else %}
+                <div class="card empty">
+                    <span class="empty-icon"><svg class="i"><use href="#i-search"/></svg></span>
+                    <h2>{% trans "Hech narsa topilmadi" %}</h2>
+                    <p>{% trans "Filtrlarni o'zgartirib ko'ring yoki boshqa so'z bilan qidiring." %}</p>
+                    <a class="btn btn-dark" href="{% url 'category_list' %}">{% trans "Filtrlarni tozalash" %}</a>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

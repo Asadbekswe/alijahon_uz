@@ -1,0 +1,37 @@
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block content %}
+<div class="container panel-layout">
+    {% with name=request.resolver_match.url_name %}
+    <nav class="side-nav" aria-label="{% trans 'Kabinet' %}">
+        <div class="who">
+            <span class="avatar">{% if user.image %}<img src="{{ user.image.url }}" alt="">{% else %}{{ user.initials }}{% endif %}</span>
+            <span><strong>{{ user.display_name }}</strong><span>{{ user.phone|phone }}</span></span>
+        </div>
+        <div class="group-label">{% trans "Xaridlar" %}</div>
+        <a class="{% if name == 'profile_page' %}is-active{% endif %}" href="{% url 'profile_page' %}"><svg class="i"><use href="#i-user"/></svg>{% trans "Kabinet" %}</a>
+        <a class="{% if name == 'order_page' or name == 'order_list' or name == 'order_detail' %}is-active{% endif %}" href="{% url 'order_page' %}"><svg class="i"><use href="#i-package"/></svg>{% trans "Buyurtmalarim" %}</a>
+        <a class="{% if name == 'favorite_page' %}is-active{% endif %}" href="{% url 'favorite_page' %}"><svg class="i"><use href="#i-heart"/></svg>{% trans "Sevimlilar" %}<span class="count" data-like-count>{{ favorite_ids|length }}</span></a>
+        <a class="{% if name == 'settings_page' %}is-active{% endif %}" href="{% url 'settings_page' %}"><svg class="i"><use href="#i-settings"/></svg>{% trans "Sozlamalar" %}</a>
+        <div class="group-label">{% trans "Hamkorlik" %}</div>
+        <a class="{% if name == 'market_page' or name == 'market_by_slug' or name == 'admin_page' or name == 'product_statistic' %}is-active{% endif %}" href="{% url 'market_page' %}"><svg class="i"><use href="#i-store"/></svg>{% trans "Market" %}</a>
+        <a class="{% if name == 'steam_page' %}is-active{% endif %}" href="{% url 'steam_page' %}"><svg class="i"><use href="#i-link"/></svg>{% trans "Oqimlarim" %}</a>
+        <a class="{% if name == 'statistika_page' %}is-active{% endif %}" href="{% url 'statistika_page' %}"><svg class="i"><use href="#i-list"/></svg>{% trans "Statistika" %}</a>
+        <a class="{% if name == 'diagrams_page' %}is-active{% endif %}" href="{% url 'diagrams_page' %}"><svg class="i"><use href="#i-chart"/></svg>{% trans "Diagrammalar" %}</a>
+        <a class="{% if name == 'inquiries_page' %}is-active{% endif %}" href="{% url 'inquiries_page' %}"><svg class="i"><use href="#i-inbox"/></svg>{% trans "So'rovlar" %}</a>
+        <a class="{% if name == 'competition_page' %}is-active{% endif %}" href="{% url 'competition_page' %}"><svg class="i"><use href="#i-trophy"/></svg>{% trans "Konkurs" %}</a>
+        <a class="{% if name == 'payment_page' %}is-active{% endif %}" href="{% url 'payment_page' %}"><svg class="i"><use href="#i-wallet"/></svg>{% trans "To'lovlar" %}</a>
+        {% if user.is_operator or user.is_currier or user.is_staff %}
+            <div class="group-label">{% trans "Ish joyi" %}</div>
+            {% if user.is_operator %}<a href="{% url 'operator_page' %}"><svg class="i"><use href="#i-headset"/></svg>{% trans "Operator paneli" %}</a>{% endif %}
+            {% if user.is_currier %}<a href="{% url 'currier_page' %}"><svg class="i"><use href="#i-truck"/></svg>{% trans "Kuryer paneli" %}</a>{% endif %}
+            {% if user.is_staff %}<a href="{% url 'admin:index' %}"><svg class="i"><use href="#i-grid"/></svg>{% trans "Admin panel" %}</a>{% endif %}
+        {% endif %}
+        <a class="balance-chip" href="{% url 'payment_page' %}" style="display:block"><span>{% trans "Balans" %}</span><strong>{{ user.balance|money }}</strong></a>
+        <form method="post" action="{% url 'logaut_page' %}">{% csrf_token %}
+            <button class="nav-btn" type="submit"><svg class="i"><use href="#i-logout"/></svg>{% trans "Chiqish" %}</button></form>
+    </nav>
+    {% endwith %}
+    <div>{% block panel %}{% endblock %}</div>
+</div>
+{% endblock %}

@@ -1,111 +1,221 @@
 {% extends 'apps/base.html' %}
-{% block title %}
-    Product Detail Page
+{% load i18n custom_tags %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block meta_description %}{{ product.short_description|default:product.name }}{% endblock %}
+{% block extra_head %}
+    <meta property="og:title" content="{{ product.name }}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.image.url }}">
 {% endblock %}
-{% load humanize %}
-{% load custom_tags %}
-{% block main_content %}
-    <div class="card mb-3 mt-2">
-        <div class="card-body text-center">
-            <div class="col-lg-8 mx-auto swiper-container">
-                <form method="post" action="{% url 'success_order_page' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input class="form-control" name="stream" type="hidden" required value="{{ stream_id }}"/>
-                    <input class="form-control" name="user" type="hidden" required value="{{ user.pk }}"/>
-                    <input class="form-control" name="product" id="hidden_product" type="hidden" required
-                           value="{{ product.pk }}"/>
-                    <div class="mb-4">
-                        <label class="form-label" for="full-name">Ismingiz:</label>
-                        <input class="form-control" id="full-name" name="full_name" type="text" required/>
-                        <span id="full-name-error" style="color: red; display: none;"></span>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label" for="phone-mask">Telefon nomer:</label>
-                        <input class="form-control" id="phone-mask" name="phone_number" type="text" required/>
-                        <span id="phone-error" style="color: red; display: none;"></span>
-                    </div>
-                    <div class="d-grid gap-2 col-6 mx-auto" style="margin-top: 20px;">
-                        <button class="btn btn-primary" id="submit-btn" type="submit">Buyurtma berish</button>
-                    </div>
-                </form>
+
+{% block content %}
+<div class="container">
+    <nav class="breadcrumbs mt-3" aria-label="{% trans 'Yo‘l' %}">
+        <a href="{% url 'main_base' %}">{% trans "Bosh sahifa" %}</a><svg class="i"><use href="#i-chevron-right"/></svg>
+        <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a><svg class="i"><use href="#i-chevron-right"/></svg>
+        <span>{{ product.name|truncatechars:48 }}</span>
+    </nav>
+
+    <div class="pdp">
+        {# ------------------------------------------------ gallery #}
+        <div class="gallery" data-gallery>
+            {% if gallery|length > 1 %}
+                <div class="gallery-thumbs">
+                    {% for image in gallery %}
+                        <button type="button" class="{% if forloop.first %}is-active{% endif %}" data-src="{{ image.url }}" aria-label="{% trans 'Rasm' %} {{ forloop.counter }}">
+                            <img src="{{ image.url }}" alt="" loading="lazy" width="76" height="76">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="gallery-main" style="{% if gallery|length <= 1 %}grid-column:1/-1{% endif %}">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" width="900" height="900" fetchpriority="high">
+                <div class="p-badges">
+                    {% if discount_percent %}<span class="tag tag-accent">−{{ discount_percent }}%</span>{% endif %}
+                    {% if product.is_featured %}<span class="tag tag-dark">{% trans "Tanlov" %}</span>{% endif %}
+                </div>
+                <span class="gallery-hint"><svg class="i i-sm"><use href="#i-search"/></svg>{% trans "Kattalashtirish" %}</span>
             </div>
-            <div class="row justify-content-center mt-4">
-                <div class="col-lg-8 swiper-container">
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-main mb-3 img-fluid">
-                    <div class="row mb-5 thumbs"></div>
+        </div>
+
+        {# ------------------------------------------------ info #}
+        <div class="pdp-info">
+            <div>
+                <a class="tag" href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a>
+                <h1 class="mt-2">{{ product.name }}</h1>
+                <div class="pdp-meta mt-2">
+                    {% if product.rating_count %}
+                        <a class="row" href="#reviews" data-tab-link="tab-reviews" style="gap:6px">
+                            <span class="stars">{% for on in product.rating_avg|stars %}<svg class="i{% if on %} on{% endif %}"><use href="#i-star"/></svg>{% endfor %}</span>
+                            <b style="color:var(--ink)">{{ product.rating_avg|floatformat:1 }}</b> · {{ product.rating_count }} {% trans "sharh" %}
+                        </a>
+                    {% else %}
+                        <a href="#reviews" data-tab-link="tab-reviews">{% trans "Birinchi bo'lib baho bering" %}</a>
+                    {% endif %}
+                    {% if product.sold_count %}<span>{{ product.sold_count }} {% trans "marta sotib olindi" %}</span>{% endif %}
                 </div>
             </div>
-            <div class="col-lg-8 mx-auto swiper-container mt-4">
-                <h5>{{ product.name }}</h5>
-                <p class="fs--1">{{ product.description|safe }}</p>
-                <h4 class="d-flex justify-content-center align-items-center">
-                    <span class="text-warning me-2">{% if stream_id %}{{ price|intcomma }}{% else %}
-                        {{ product.price|intcomma }}{% endif %} sum</span>
-                </h4>
+            {% if product.short_description %}<p class="muted">{{ product.short_description }}</p>{% endif %}
+
+            <div class="buy-box" data-buy-box>
+                {% if stream %}
+                    <div class="affiliate-note"><svg class="i"><use href="#i-gift"/></svg>{% trans "Maxsus havola orqali — siz uchun chegirmali narx" %}</div>
+                {% endif %}
+                <div>
+                    <div class="pdp-price">
+                        <span class="now{% if compare_at %} is-sale{% endif %}">{{ price|money }}</span>
+                        {% if compare_at %}<span class="was">{{ compare_at|money }}</span>
+                            <span class="tag tag-accent">{% trans "Tejaysiz" %} {{ savings|money }}</span>{% endif %}
+                    </div>
+                    <p class="installment mt-1">{% trans "To'lov — mahsulotni qabul qilganda, naqd yoki karta orqali" %}</p>
+                </div>
+
+                {% if product.in_stock %}
+                    <div class="stock-line{% if product.is_low_stock %} low{% endif %}">
+                        <span class="stock-dot"></span>
+                        {% if product.is_low_stock %}{% blocktrans count n=product.quantity %}Shoshiling — faqat {{ n }} dona qoldi{% plural %}Shoshiling — faqat {{ n }} dona qoldi{% endblocktrans %}
+                        {% else %}{% trans "Omborda mavjud" %}{% endif %}
+                    </div>
+                    <form method="post" action="{% url 'cart_add' %}" data-cart-add class="stack" style="--stack:12px">
+                        {% csrf_token %}
+                        <input type="hidden" name="product" value="{{ product.pk }}">
+                        {% if stream %}<input type="hidden" name="stream" value="{{ stream.pk }}">{% endif %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <div class="buy-row">
+                            <div class="qty">
+                                <button type="button" data-qty-step="-1" aria-label="{% trans 'Kamaytirish' %}"><svg class="i i-sm"><use href="#i-minus"/></svg></button>
+                                <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity|default:1 }}" aria-label="{% trans 'Miqdor' %}">
+                                <button type="button" data-qty-step="1" aria-label="{% trans 'Ko‘paytirish' %}"><svg class="i i-sm"><use href="#i-plus"/></svg></button>
+                            </div>
+                            <button class="btn btn-primary btn-lg" type="submit"><svg class="i"><use href="#i-bag"/></svg>{% trans "Savatga qo'shish" %}</button>
+                        </div>
+                    </form>
+                    <details class="quick-order"{% if stream %} open{% endif %}>
+                        <summary>{% trans "Bir bosishda buyurtma — operator qo'ng'iroq qiladi" %}<svg class="i i-sm"><use href="#i-chevron-down"/></svg></summary>
+                        <form method="post" action="{% url 'success_order_page' %}" data-submit-once>
+                            {% csrf_token %}
+                            <input type="hidden" name="product" value="{{ product.pk }}">
+                            <input type="hidden" name="quantity" value="1">
+                            {% if stream %}<input type="hidden" name="stream" value="{{ stream.pk }}">{% endif %}
+                            <div class="form-grid">
+                                <div class="field"><label class="label" for="qo-name">{% trans "Ismingiz" %}</label>
+                                    <input class="input" id="qo-name" name="full_name" required minlength="3" autocomplete="name" value="{{ user.get_full_name|default:'' }}"></div>
+                                <div class="field"><label class="label" for="qo-phone">{% trans "Telefon" %}</label>
+                                    <input class="input" id="qo-phone" name="phone_number" required data-phone inputmode="tel" autocomplete="tel" placeholder="+998 (__) ___-__-__" value="{% if user.is_authenticated %}{{ user.phone }}{% endif %}"></div>
+                            </div>
+                            <button class="btn btn-dark btn-block" type="submit">{% trans "Buyurtma berish" %}</button>
+                        </form>
+                    </details>
+                {% else %}
+                    <div class="stock-line out"><span class="stock-dot"></span>{% trans "Hozircha omborda yo'q" %}</div>
+                    <button class="btn btn-lg btn-block" disabled>{% trans "Tugagan" %}</button>
+                {% endif %}
+                <form method="post" action="{% url 'add_favourite_page' product.pk %}" data-like data-like-id="{{ product.pk }}">
+                    {% csrf_token %}
+                    <button class="btn btn-ghost btn-block{% if product.pk in favorite_ids %} is-liked{% endif %}" type="submit" style="--btn-fg:var(--ink-2)">
+                        <svg class="i i-sm"><use href="#i-heart"/></svg>{% trans "Sevimlilarga qo'shish" %}
+                    </button>
+                </form>
+            </div>
+
+            <div class="perks">
+                <div class="perk"><svg class="i"><use href="#i-truck"/></svg>{% trans "1–3 kunda yetkazish" %}</div>
+                <div class="perk"><svg class="i"><use href="#i-shield"/></svg>{% trans "Rasmiy kafolat" %}</div>
+                <div class="perk"><svg class="i"><use href="#i-refresh"/></svg>{% trans "14 kun qaytarish" %}</div>
             </div>
         </div>
     </div>
-    <script src="https://unpkg.com/imask"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://rawgit.com/RobinHerbots/jquery.inputmask/3.x/dist/jquery.inputmask.bundle.js"></script>
-    <script>
-        $(function () {
-            $('#phone-mask').inputmask({
-                "mask": "+\\9\\98(99) 999-99-99",
-                "placeholder": "_",
-                showMaskOnHover: true,
-                showMaskOnFocus: true,
-                onBeforePaste: function (pastedValue, opts) {
-                    return pastedValue.replace(/\D/g, '').slice(-9);
-                }
-            });
-        });
-        $('.btn_open_modal').on('click', function () {
-            let product_id = $(this).attr('name');
-            $('#hidden_product').val(product_id);
-        });
 
-        function toggleValidationError(elementId, errorMessage, show = true) {
-            const errorElement = document.getElementById(elementId);
-            if (show) {
-                errorElement.innerText = errorMessage;
-                errorElement.style.display = 'block';
-                setTimeout(() => errorElement.style.display = 'none', 5000);
-            } else {
-                errorElement.style.display = 'none';
-            }
-        }
+    {# ------------------------------------------------ tabs #}
+    <section class="section" id="reviews">
+        <div data-tabs>
+            <div class="tabs" role="tablist">
+                <button class="is-active" role="tab" aria-selected="true" aria-controls="tab-desc" id="t-desc">{% trans "Tavsif" %}</button>
+                {% if specifications %}<button role="tab" aria-selected="false" aria-controls="tab-specs" id="t-specs">{% trans "Xususiyatlar" %}</button>{% endif %}
+                <button role="tab" aria-selected="false" aria-controls="tab-reviews" id="t-reviews">{% trans "Sharhlar" %} <span class="faint">{{ product.rating_count }}</span></button>
+            </div>
+            <div class="tab-panel prose" role="tabpanel" id="tab-desc" aria-labelledby="t-desc">{{ product.description|safe }}</div>
+            {% if specifications %}
+                <div class="tab-panel" role="tabpanel" id="tab-specs" aria-labelledby="t-specs" hidden>
+                    <table class="specs"><tbody>{% for key, value in specifications %}<tr><th>{{ key }}</th><td>{{ value }}</td></tr>{% endfor %}</tbody></table>
+                </div>
+            {% endif %}
+            <div class="tab-panel" role="tabpanel" id="tab-reviews" aria-labelledby="t-reviews" hidden>
+                <div class="reviews-layout">
+                    <aside class="rating-summary">
+                        <div class="rating-big">
+                            <strong>{{ product.rating_avg|default:0|floatformat:1 }}</strong>
+                            <div><span class="stars">{% for on in product.rating_avg|stars %}<svg class="i{% if on %} on{% endif %}"><use href="#i-star"/></svg>{% endfor %}</span>
+                                <div class="text-xs muted">{{ product.rating_count }} {% trans "ta sharh asosida" %}</div></div>
+                        </div>
+                        {% for star, count, pct in rating_distribution %}
+                            <div class="dist-row"><span>{{ star }}★</span><div class="dist-bar"><span style="width:{{ pct }}%"></span></div><span>{{ count }}</span></div>
+                        {% endfor %}
+                        {% if user.is_authenticated %}
+                            <form method="post" action="{% url 'product_review' product.slug %}" class="stack" style="--stack:10px">
+                                {% csrf_token %}
+                                <span class="label">{% if user_review %}{% trans "Bahoyingizni yangilang" %}{% else %}{% trans "Mahsulotni baholang" %}{% endif %}</span>
+                                <div class="rating-input">
+                                    {% for i in "54321" %}
+                                        <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if user_review.rating|stringformat:"s" == i %}checked{% endif %} required>
+                                        <label for="star{{ i }}" title="{{ i }}"><svg class="i i-fill"><use href="#i-star"/></svg></label>
+                                    {% endfor %}
+                                </div>
+                                <textarea class="textarea" name="text" maxlength="2000" placeholder="{% trans 'Tajribangiz bilan bo‘lishing (ixtiyoriy)' %}">{{ user_review.text|default:'' }}</textarea>
+                                <button class="btn btn-dark btn-block" type="submit">{% trans "Yuborish" %}</button>
+                            </form>
+                        {% else %}
+                            <a class="btn btn-block" href="{% url 'login_page' %}?next={{ request.path|urlencode }}%23reviews">{% trans "Sharh yozish uchun kiring" %}</a>
+                        {% endif %}
+                    </aside>
+                    <div>
+                        {% for review in reviews %}
+                            <article class="review">
+                                <div class="review-head">
+                                    <span class="avatar">{{ review.user.initials }}</span>
+                                    <div style="display:grid"><strong>{{ review.user.get_full_name|default:_("Xaridor") }}</strong>
+                                        <span>{{ review.created_at|custom_date }}</span></div>
+                                    <span class="stars" style="margin-left:auto">{% for on in review.rating|stars %}<svg class="i{% if on %} on{% endif %}"><use href="#i-star"/></svg>{% endfor %}</span>
+                                </div>
+                                {% if review.text %}<p>{{ review.text }}</p>{% endif %}
+                            </article>
+                        {% empty %}
+                            <div class="empty" style="padding:24px 0">
+                                <span class="empty-icon"><svg class="i"><use href="#i-star"/></svg></span>
+                                <h3>{% trans "Hali sharhlar yo'q" %}</h3>
+                                <p>{% trans "Mahsulotni sotib olgan bo'lsangiz, fikringiz boshqalarga yordam beradi." %}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        function validatePhoneNumber(inputId, errorElementId) {
-            const phoneValue = document.getElementById(inputId).value.replace(/\D/g, '');
-            const isValid = phoneValue.length === 12;
-            toggleValidationError(errorElementId, 'Telefon raqam standardga javob bermaydi, iltimos tekshirib yuboring', !isValid);
-            return isValid;
-        }
+    {% if related %}
+        <section class="section-tight">
+            <div class="section-head"><div><h2>{% trans "O'xshash mahsulotlar" %}</h2></div>
+                <a class="link-arrow" href="{{ product.category.get_absolute_url }}">{{ product.category.name }} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a></div>
+            <div class="rail">{% for product in related %}{% include 'apps/products/_card.html' %}{% endfor %}</div>
+        </section>
+    {% endif %}
+    {% if recently_viewed %}
+        <section class="section-tight">
+            <div class="section-head"><div><h2>{% trans "Yaqinda ko'rganlaringiz" %}</h2></div></div>
+            <div class="rail">{% for product in recently_viewed %}{% include 'apps/products/_card.html' %}{% endfor %}</div>
+        </section>
+    {% endif %}
+</div>
 
-        function validateFullName(inputId, errorElementId) {
-            const fullNameValue = document.getElementById(inputId).value.trim();
-            if (fullNameValue.length < 3) {
-                toggleValidationError(errorElementId, 'Ism uzunligi kamida 3 ta belgidan iborat bo\'lishi kerak');
-                return false;
-            }
-            if (/\d/.test(fullNameValue)) {
-                toggleValidationError(errorElementId, 'Ismda raqam bo\'lishi mumkin emas');
-                return false;
-            }
-            toggleValidationError(errorElementId, '', false);
-            return true;
-        }
-
-        document.getElementById('submit-btn').addEventListener('click', function (event) {
-            const isPhoneValid = validatePhoneNumber('phone-mask', 'phone-error');
-            const isFullNameValid = validateFullName('full-name', 'full-name-error');
-
-            if (!isPhoneValid || !isFullNameValid) {
-                event.preventDefault();
-            }
-        });
-
-    </script>
-
+{% if product.in_stock %}
+    <div class="buy-bar">
+        <div><div class="price-now{% if compare_at %} is-sale{% endif %}">{{ price|money }}</div>
+            {% if compare_at %}<div class="price-was">{{ compare_at|money }}</div>{% endif %}</div>
+        <form method="post" action="{% url 'cart_add' %}" data-cart-add style="flex:1;display:flex">
+            {% csrf_token %}
+            <input type="hidden" name="product" value="{{ product.pk }}">
+            {% if stream %}<input type="hidden" name="stream" value="{{ stream.pk }}">{% endif %}
+            <button class="btn btn-primary btn-block" type="submit"><svg class="i"><use href="#i-bag"/></svg>{% trans "Savatga" %}</button>
+        </form>
+    </div>
+{% endif %}
 {% endblock %}

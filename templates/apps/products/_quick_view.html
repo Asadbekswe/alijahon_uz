@@ -1,0 +1,36 @@
+{% load i18n custom_tags %}
+<div class="quick-view" data-product-card>
+    <div class="qv-media"><img src="{{ product.image.url }}" alt="{{ product.name }}" width="600" height="600"></div>
+    <div class="qv-info">
+        <span class="tag" style="justify-self:start">{{ product.category.name }}</span>
+        <h2 class="modal-title" style="font-size:var(--fs-xl)">{{ product.name }}</h2>
+        {% if product.rating_count %}
+            <div class="pdp-meta"><span class="stars">{% for on in product.rating_avg|stars %}<svg class="i{% if on %} on{% endif %}"><use href="#i-star"/></svg>{% endfor %}</span>
+                <b style="color:var(--ink)">{{ product.rating_avg|floatformat:1 }}</b> · {{ product.rating_count }} {% trans "sharh" %}</div>
+        {% endif %}
+        <div class="pdp-price">
+            <span class="now{% if product.discount_percent %} is-sale{% endif %}" style="font-size:var(--fs-xl)">{{ product.price|money }}</span>
+            {% if product.discount_percent %}<span class="was">{{ product.old_price|money }}</span><span class="tag tag-accent">−{{ product.discount_percent }}%</span>{% endif %}
+        </div>
+        {% if product.short_description %}<p class="muted">{{ product.short_description }}</p>{% endif %}
+        {% if product.in_stock %}
+            <div class="stock-line{% if product.is_low_stock %} low{% endif %}"><span class="stock-dot"></span>
+                {% if product.is_low_stock %}{% trans "Faqat" %} {{ product.quantity }} {% trans "dona qoldi" %}{% else %}{% trans "Omborda mavjud" %}{% endif %}</div>
+            <form method="post" action="{% url 'cart_add' %}" data-cart-add>
+                {% csrf_token %}
+                <input type="hidden" name="product" value="{{ product.pk }}">
+                <div class="buy-row">
+                    <div class="qty">
+                        <button type="button" data-qty-step="-1" aria-label="{% trans 'Kamaytirish' %}"><svg class="i i-sm"><use href="#i-minus"/></svg></button>
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" aria-label="{% trans 'Miqdor' %}">
+                        <button type="button" data-qty-step="1" aria-label="{% trans 'Ko‘paytirish' %}"><svg class="i i-sm"><use href="#i-plus"/></svg></button>
+                    </div>
+                    <button class="btn btn-primary" type="submit" autofocus><svg class="i"><use href="#i-bag"/></svg>{% trans "Savatga" %}</button>
+                </div>
+            </form>
+        {% else %}
+            <div class="stock-line out"><span class="stock-dot"></span>{% trans "Hozircha omborda yo'q" %}</div>
+        {% endif %}
+        <a class="link-arrow" href="{{ product.get_absolute_url }}">{% trans "Batafsil ma'lumot" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a>
+    </div>
+</div>

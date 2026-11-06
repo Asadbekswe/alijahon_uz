@@ -1,25 +1,39 @@
-asgiref==3.8.1
-certifi==2024.8.30
-charset-normalizer==3.4.0
-Django==5.1.1
-django-ckeditor-5==0.2.13
-django-debug-toolbar==4.4.6
-django-rosetta==0.10.1
-django-seed==0.3.1
-Faker==30.6.0
-idna==3.10
-iniconfig==2.0.0
-mysqlclient==2.2.4
-packaging==24.2
-pillow==10.4.0
-pluggy==1.5.0
+asgiref==3.13.0
+    # via django
+certifi==2026.10.23
+    # via requests
+charset-normalizer==3.5.2
+    # via requests
+django==5.2.19
+    # via
+    #   -r requirements.in
+    #   django-ckeditor-5
+    #   django-rosetta
+django-ckeditor-5==0.2.20
+    # via -r requirements.in
+django-rosetta==0.10.3
+    # via -r requirements.in
+gunicorn==26.2.0
+    # via -r requirements.in
+idna==3.20
+    # via requests
+mysqlclient==2.3.0
+    # via -r requirements.in
+pillow==13.0.0
+    # via
+    #   -r requirements.in
+    #   django-ckeditor-5
 polib==1.2.0
-pytest==8.3.3
-python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
-requests==2.32.3
-six==1.16.0
-sqlparse==0.5.1
-toposort==1.10
-typing_extensions==4.12.2
-urllib3==2.2.3
+    # via django-rosetta
+python-dotenv==1.2.4
+    # via -r requirements.in
+redis==8.1.0
+    # via -r requirements.in
+requests==2.34.2
+    # via django-rosetta
+sqlparse==0.6.1
+    # via django
+urllib3==2.8.0
+    # via requests
+whitenoise==6.12.0
+    # via -r requirements.in

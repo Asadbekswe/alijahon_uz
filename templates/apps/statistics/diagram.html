@@ -1,27 +1,48 @@
-{% extends 'apps/base.html' %}
-{% block title %}
-    Diagrammalar
-{% endblock %}
-{% block main_content %}
-
-    <div class="card mb-3" bis_skin_checked="1">
-        <div class="card-body" bis_skin_checked="1">
-            <div class="container" bis_skin_checked="1">
-                <div class="d-flex justify-content-center" bis_skin_checked="1">
-                    <canvas class="w-50 h-50 m-0" id="order-chart" width="585" height="585"
-                            style="display: block; box-sizing: border-box; height: 585px; width: 585px;"></canvas>
-                </div>
-                <div class="d-flex justify-content-center" bis_skin_checked="1">
-                    <canvas class="w-50 h-50 m-0" id="regions-chart" width="585" height="585"
-                            style="display: block; box-sizing: border-box; height: 585px; width: 585px;"></canvas>
-                </div>
-                <div class="d-flex justify-content-center" bis_skin_checked="1">
-                    <canvas class="w-50 h-50 m-0" id="products-chart" width="585" height="585"
-                            style="display: block; box-sizing: border-box; height: 585px; width: 585px;"></canvas>
-                </div>
-            </div>
-        </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n static custom_tags %}
+{% block title %}{% trans "Diagrammalar" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "Diagrammalar" %}</h1><p>{% blocktrans %}So'nggi {{ days }} kun dinamikasi{% endblocktrans %}</p></div></div>
+    <div class="kpis">
+        <div class="kpi"><div class="kpi-label">{% trans "Buyurtmalar" %}</div><div class="kpi-value">{{ total_orders }}</div><div class="kpi-hint">{{ days }} {% trans "kunda" %}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Yetkazildi" %}</div><div class="kpi-value">{{ total_delivered }}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Konversiya" %}</div><div class="kpi-value">{{ conversion }}%</div><div class="kpi-hint">{% trans "yetkazilgan / jami" %}</div></div>
+        <div class="kpi is-dark"><div class="kpi-label">{% trans "Tashriflar" %}</div><div class="kpi-value">{{ visits|number }}</div><div class="kpi-hint">{% trans "barcha oqimlar" %}</div></div>
     </div>
-
-
+    {{ chart|json_script:"diagram-data" }}
+    <div class="card mb-2">
+        <div class="card-head"><h2>{% trans "Kunlik buyurtmalar" %}</h2></div>
+        <div class="card-body"><div id="daily-chart"></div></div>
+    </div>
+    <div class="grid-2">
+        <div class="card"><div class="card-head"><h2>{% trans "Holatlar bo'yicha" %}</h2></div><div class="card-body"><div class="bar-list" id="status-list"></div></div></div>
+        <div class="card"><div class="card-head"><h2>{% trans "Eng faol oqimlar" %}</h2></div><div class="card-body"><div class="bar-list" id="stream-list"></div></div></div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        (() => {
+            const data = JSON.parse(document.getElementById('diagram-data').textContent);
+            const daily = document.getElementById('daily-chart');
+            daily.dataset.chart = JSON.stringify({type: 'bars', labels: data.labels, format: 'count',
+                series: [{name: "{% trans 'Barcha buyurtmalar' %}", values: data.orders}, {name: "{% trans 'Yetkazilgan' %}", values: data.delivered}]});
+            const bars = (root, rows, emptyText) => {
+                if (!rows.length) { root.textContent = emptyText; root.className = 'muted text-sm'; return; }
+                const max = Math.max(...rows.map((r) => r.value));
+                rows.forEach((r) => {
+                    const row = document.createElement('div'); row.className = 'bl-row';
+                    const top = document.createElement('div'); top.className = 'bl-top';
+                    const name = document.createElement('span'); name.textContent = r.label;
+                    const val = document.createElement('b'); val.textContent = r.value;
+                    top.append(name, val);
+                    const bar = document.createElement('div'); bar.className = 'bl-bar';
+                    const fill = document.createElement('span'); fill.style.width = `${(r.value / max) * 100}%`;
+                    bar.appendChild(fill); row.append(top, bar); root.appendChild(row);
+                });
+            };
+            bars(document.getElementById('status-list'), data.statuses, "{% trans 'Ma’lumot yo‘q' %}");
+            bars(document.getElementById('stream-list'), data.streams, "{% trans 'Ma’lumot yo‘q' %}");
+        })();
+    </script>
+    <script src="{% static 'store/js/charts.js' %}"></script>
 {% endblock %}

@@ -1,64 +1,38 @@
-{% extends 'apps/base.html' %}
-{% block title %}
-    Profile page
-{% endblock %}
-{% block main_content %}
-    <div class="card" bis_skin_checked="1">
-        <div class="row g-0 text-center fs--1" bis_skin_checked="1">
-            <div class="col-12 col-md-12" bis_skin_checked="1">
-                <div class="bg-white dark__bg-1100 p-3 h-100" bis_skin_checked="1"><img
-                        class="img-thumbnail img-fluid rounded-circle mb-3 shadow-sm" src="{{ user.image.url }}" alt=""
-                        width="100">
-                    <h6 class="mb-1">
-                        {{ user.phone }}
-                        <br>
-                        <p>{{ user.phone }}</p>
-                    </h6>
-                    <p class="fs--2 mb-1"><a class="btn btn-link text-700" href="{% url 'settings_page' %}">Sozlamalarga
-                        o'tish</a></p>
-
-                </div>
-            </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Kabinet" %}{% endblock %}
+{% block panel %}
+    {% if confirm_logout %}
+        <div class="alert alert-warning mb-2" style="align-items:center">
+            <svg class="i"><use href="#i-logout"/></svg><span class="grow">{% trans "Hisobdan chiqmoqchimisiz?" %}</span>
+            <form method="post" action="{% url 'logaut_page' %}">{% csrf_token %}<button class="btn btn-sm btn-dark" type="submit">{% trans "Chiqish" %}</button></form>
         </div>
-        <div class="card-body fs--1 p-0" bis_skin_checked="1">
-            <a class="border-bottom-0 notification rounded-0 border-x-0 border border-300"
-               href="{% url 'favorite_page' %}">
-                <div class="notification-avatar" bis_skin_checked="1">
-                    <div class="avatar avatar-xl me-3" bis_skin_checked="1">
-                        <div class="avatar-emoji rounded-circle " bis_skin_checked="1"><span role="img"
-                                                                                             aria-label="Emoji">📌</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="notification-body" bis_skin_checked="1">
-                    <p class="mb-1"><strong>Mening sevimlarim</strong></p>
-                </div>
-            </a>
-            <a class="border-bottom-0 notification rounded-0 border-x-0 border border-300"
-               href="{% url 'order_page' %}">
-                <div class="notification-avatar" bis_skin_checked="1">
-                    <div class="avatar avatar-xl me-3" bis_skin_checked="1">
-                        <div class="avatar-emoji rounded-circle " bis_skin_checked="1"><span role="img"
-                                                                                             aria-label="Emoji">🏷️</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="notification-body" bis_skin_checked="1">
-                    <p class="mb-1"><strong>Mening buyurtmalarim</strong></p>
-                </div>
-            </a>
-            <a class="border-bottom-0 notification rounded-0 border-x-0 border border-300" href="#">
-                <div class="notification-avatar" bis_skin_checked="1">
-                    <div class="avatar avatar-xl me-3" bis_skin_checked="1">
-                        <div class="avatar-emoji rounded-circle " bis_skin_checked="1"><span role="img"
-                                                                                             aria-label="Emoji">💬</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="notification-body" bis_skin_checked="1">
-                    <p class="mb-1"><strong>Mijozlarni qo'llab-quvvatlash</strong></p>
-                </div>
-            </a>
+    {% endif %}
+    <div class="card card-body mb-2">
+        <div class="profile-hero">
+            <span class="avatar avatar-lg">{% if user.image %}<img src="{{ user.image.url }}" alt="">{% else %}{{ user.initials }}{% endif %}</span>
+            <div class="grow">
+                <h1 style="font-size:var(--fs-xl)">{% trans "Salom" %}, {{ user.first_name|default:user.display_name }}!</h1>
+                <p class="muted text-sm mt-1">{{ user.phone|phone }}{% if user.district %} · {{ user.district.region }}, {{ user.district }}{% endif %}</p>
+            </div>
+            <a class="btn btn-sm hide-sm" href="{% url 'settings_page' %}"><svg class="i i-sm"><use href="#i-settings"/></svg>{% trans "Tahrirlash" %}</a>
+        </div>
+    </div>
+    <div class="quick-links mb-3">
+        <a class="quick-link" href="{% url 'order_page' %}"><span class="qi"><svg class="i"><use href="#i-package"/></svg></span><strong>{{ order_count }}</strong><span>{% trans "buyurtma" %}{% if active_order_count %} · {{ active_order_count }} {% trans "faol" %}{% endif %}</span></a>
+        <a class="quick-link" href="{% url 'favorite_page' %}"><span class="qi"><svg class="i"><use href="#i-heart"/></svg></span><strong>{{ favorite_count }}</strong><span>{% trans "sevimli mahsulot" %}</span></a>
+        <a class="quick-link" href="{% url 'steam_page' %}"><span class="qi"><svg class="i"><use href="#i-link"/></svg></span><strong>{{ stream_count }}</strong><span>{% trans "faol oqim" %}</span></a>
+        <a class="quick-link" href="{% url 'payment_page' %}" style="background:var(--ink);color:#fff;border-color:var(--ink)"><span class="qi" style="background:rgba(255,255,255,.1)"><svg class="i"><use href="#i-wallet"/></svg></span><strong>{{ user.balance|money }}</strong><span style="color:rgba(255,255,255,.6)">{% trans "hamkorlik balansi" %}</span></a>
+    </div>
+    <div class="card">
+        <div class="card-head"><h2>{% trans "So'nggi buyurtmalar" %}</h2><a class="link-arrow text-sm" href="{% url 'order_page' %}">{% trans "Hammasi" %} <svg class="i i-sm"><use href="#i-arrow-right"/></svg></a></div>
+        <div class="card-body">
+            {% if recent_orders %}
+                <div class="list-cards">{% for order in recent_orders %}{% include 'apps/orders/_order_card.html' %}{% endfor %}</div>
+            {% else %}
+                <div class="empty" style="padding:24px"><span class="empty-icon"><svg class="i"><use href="#i-package"/></svg></span>
+                    <h3>{% trans "Hali buyurtmalar yo'q" %}</h3><a class="btn btn-dark" href="{% url 'category_list' %}">{% trans "Xaridni boshlash" %}</a></div>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

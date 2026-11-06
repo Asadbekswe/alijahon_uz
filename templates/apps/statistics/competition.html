@@ -1,84 +1,47 @@
-{% extends 'apps/base.html' %}
-{% load i18n %}
-{% load custom_tags %}
-{% block title %}
-    Competition page
-{% endblock %}
-{% block main_content %}
-    <div class="card-group mt-2" bis_skin_checked="1">
-        <div class="card overflow-hidden" bis_skin_checked="1">
-            <div class="card-img-top" bis_skin_checked="1"><img class="img-fluid" src="{{ competition.image.url }}"
-                                                                alt="Konkurs"></div>
-            <div class="card-body" bis_skin_checked="1">
-                <h3 class="card-title">alijahon.uz</h3>
-                <p class="card-text"></p>
-                <p>{% trans competition.title|safe %}</p>
-
-                <p>{% trans competition.description|safe %}</p>
-                <p></p>
-                <div class="row light" bis_skin_checked="1">
-                    <div class="col-6 col-sm-6 col-lg-4 mb-4" bis_skin_checked="1">
-                        <div class="card text-white bg-info" bis_skin_checked="1">
-                            <div class="card-body" bis_skin_checked="1">
-                                <div class="card-title" bis_skin_checked="1">{% trans 'Boshlash' %}</div>
-                                <p class="card-text">{{ competition.start_date|date:'d m Y' }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-sm-6 col-lg-4 mb-4" bis_skin_checked="1">
-                        <div class="card text-white bg-danger" bis_skin_checked="1">
-                            <div class="card-body" bis_skin_checked="1">
-                                <div class="card-title" bis_skin_checked="1">{% trans 'Yakunlash' %}</div>
-                                <p class="card-text">{{ competition.end_date|date:'d m y' }}</p>
-                            </div>
-                        </div>
-                    </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Konkurs" %}{% endblock %}
+{% block panel %}
+    {% if competition %}
+        <div class="card mb-3" style="overflow:hidden">
+            <div class="grid-2" style="gap:0;align-items:center">
+                <div class="card-body stack">
+                    <span class="tag tag-accent" style="justify-self:start">{% trans "Faol konkurs" %}</span>
+                    <div class="prose" style="font-size:var(--fs-lg);font-weight:800;color:var(--ink)">{{ competition.title|safe }}</div>
+                    <div class="prose text-sm">{{ competition.description|safe }}</div>
+                    {% if competition.start_date or competition.end_date %}
+                        <div class="row text-sm muted"><svg class="i i-sm"><use href="#i-calendar"/></svg>{{ competition.start_date|custom_date }} — {{ competition.end_date|custom_date }}</div>
+                    {% endif %}
                 </div>
+                {% if competition.image %}<img src="{{ competition.image.url }}" alt="" style="width:100%;height:100%;max-height:320px;object-fit:cover">{% endif %}
             </div>
         </div>
-    </div>
-    <div class="card mb-3" bis_skin_checked="1">
-        <div class="card-header" bis_skin_checked="1">
-            <div class="row flex-between-end" bis_skin_checked="1">
-                <div class="col-auto align-self-center" bis_skin_checked="1">
-                    <h5 class="mb-0" data-anchor="data-anchor" id="table-example">{% trans 'Konkurs natijalari' %}<a
-                            class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#table-example"
-                            style="padding-left: 0.375em;"></a></h5>
-                </div>
-            </div>
-        </div>
-        <div class="card-body pt-0" bis_skin_checked="1">
-            <div class="tab-content" bis_skin_checked="1">
-                <div class="tab-pane preview-tab-pane active" role="tabpanel"
-                     aria-labelledby="tab-dom-316cb649-6a3e-4ec3-9de8-7d83e880873f"
-                     id="dom-316cb649-6a3e-4ec3-9de8-7d83e880873f" bis_skin_checked="1">
-                    <div id="tableExample"
-                         data-list="{&quot;valueNames&quot;:[&quot;name&quot;,&quot;email&quot;,&quot;age&quot;],&quot;page&quot;:10,&quot;pagination&quot;:true}"
-                         bis_skin_checked="1">
-                        <div class="table-responsive scrollbar" bis_skin_checked="1">
-                            <table class="table table-bordered table-striped fs--1 mb-0">
-                                <thead class="bg-200 text-900">
-                                <tr>
-                                    <th class="sort" data-sort="table_number">№</th>
-                                    <th class="sort" data-sort="email">{% trans 'Sotuvchi' %}</th>
-                                    <th class="sort" data-sort="age">{% trans 'Sotilgan' %}</th>
-                                </tr>
-                                </thead>
-                                <tbody class="list">
-                                {% for  user__ in users %}
-                                    <tr>
-                                        <td class="text">#{{ forloop.counter }}</td>
-                                        <td class="email">{{ user__.first_name }}</td>
-                                        <td class="age">{{ user__.order_product_count }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+        {% if users %}
+            {% if page_obj.number == 1 %}
+                <div class="podium">
+                    {% for u in users|slice:":3" %}
+                        <div class="place{% if forloop.first %} first{% endif %}" style="order:{% if forloop.counter == 1 %}2{% elif forloop.counter == 2 %}1{% else %}3{% endif %}">
+                            <span class="medal medal-{{ forloop.counter }}">{{ forloop.counter }}</span>
+                            <strong>{{ u.display_name }}</strong>
+                            <span class="text-sm muted">{{ u.order_product_count }} {% trans "ta yetkazilgan" %}</span>
                         </div>
-
-                    </div>
+                    {% endfor %}
                 </div>
-            </div>
-        </div>
-    </div>
+            {% endif %}
+            <div class="card"><div class="table-wrap"><table class="table">
+                <thead><tr><th>№</th><th>{% trans "Hamkor" %}</th><th class="num">{% trans "Yetkazilgan mahsulotlar" %}</th></tr></thead>
+                <tbody>{% for u in users %}
+                    <tr{% if u.pk == user.pk %} style="background:var(--accent-soft)"{% endif %}><td class="tnum">{{ page_obj.start_index|add:forloop.counter0 }}</td>
+                        <td><div class="row"><span class="avatar">{{ u.initials }}</span>{{ u.display_name }}{% if u.pk == user.pk %} <span class="tag tag-accent">{% trans "Siz" %}</span>{% endif %}</div></td>
+                        <td class="num"><b>{{ u.order_product_count }}</b></td></tr>
+                {% endfor %}</tbody></table></div></div>
+            {% include 'apps/parts/pagination.html' %}
+        {% else %}
+            <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-trophy"/></svg></span><h2>{% trans "Reyting hali bo'sh" %}</h2>
+                <p>{% trans "Birinchi yetkazilgan buyurtma bilan reytingga kiring!" %}</p></div>
+        {% endif %}
+    {% else %}
+        <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-trophy"/></svg></span><h2>{% trans "Hozir faol konkurs yo'q" %}</h2>
+            <p>{% trans "Yangi konkurs e'lon qilinganda shu yerda ko'rasiz." %}</p></div>
+    {% endif %}
 {% endblock %}

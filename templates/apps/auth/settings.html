@@ -1,164 +1,48 @@
-{% extends 'apps/base.html' %}
-{% load i18n %}
-{% block title %}
-    Settings page
-{% endblock %}
-{% block main_content %}
-    <div class="row">
-        <div class="col-12">
-            <div class="card mb-3 btn-reveal-trigger">
-                <div class="card-header position-relative min-vh-25 mb-8">
-                    <div class="cover-image">
-                        <div class="bg-holder rounded-3 rounded-bottom-0">
-                        </div>
-                        <input class="d-none" id="upload-cover-image" type="file">
-
-                    </div>
-                    <div class="avatar avatar-5xl avatar-profile shadow-sm img-thumbnail rounded-circle">
-                        <form action="{% url 'settings_change_image_page' %}" method="post"
-                              enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="h-100 w-100 rounded-circle overflow-hidden position-relative"><img
-                                    src="
-                                            
-                                            {% if user.image %}{{ user.image.url }}{% else %}https://alijahon.uz/media/img/nouser.png{% endif %}"
-                                    width="200" style="height: 162px" alt="" data-dz-thumbnail="data-dz-thumbnail">
-
-                                <input name="image" class="d-none" id="profile-image" type="file"/>
-                                <label class="mb-0 overlay-icon d-flex flex-center" for="profile-image"><span
-                                        class="bg-holder overlay overlay-0"></span><span
-                                        class="z-index-1 text-white dark__text-white text-center fs--1"><span
-                                        class="fas fa-camera"></span><span class="d-block">Update</span></span></label>
-                            </div>
-                            <div class="col-12 d-flex justify-content-end" style="margin-left: 80px">
-                                <button class="btn btn-primary" type="submit">{% trans "Saqlash" %}</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Sozlamalar" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "Sozlamalar" %}</h1><p>{% trans "Shaxsiy ma'lumotlar, yetkazish manzili va xavfsizlik" %}</p></div></div>
+    <div class="stack">
+        <section class="card">
+            <div class="card-head"><h2>{% trans "Profil rasmi" %}</h2></div>
+            <div class="card-body">
+                <form class="row wrap" method="post" action="{% url 'settings_change_image_page' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <span class="avatar avatar-lg" id="avatar-preview">{% if user.image %}<img src="{{ user.image.url }}" alt="">{% else %}{{ user.initials }}{% endif %}</span>
+                    <label class="btn btn-sm" style="cursor:pointer"><svg class="i i-sm"><use href="#i-image"/></svg>{% trans "Rasm yuklash" %}
+                        <input class="sr-only" type="file" name="image" accept="image/png,image/jpeg,image/webp" data-image-preview="avatar-preview"></label>
+                    <span class="field-hint">{% trans "JPG, PNG yoki WEBP, 5 MB gacha" %}</span>
+                </form>
             </div>
-        </div>
-    </div>
-    <div class="row g-0" bis_skin_checked="1">
-        <div class="col-lg-8 pe-lg-2" bis_skin_checked="1">
-            <div class="card mb-3" bis_skin_checked="1">
-                <div class="card-header" bis_skin_checked="1">
-                    <h5 class="mb-0">{% trans "Sozlamalar" %}</h5>
+        </section>
+        <form class="card" method="post" novalidate>
+            {% csrf_token %}
+            <div class="card-head"><h2>{% trans "Shaxsiy ma'lumotlar" %}</h2></div>
+            <div class="card-body">
+                <div class="form-grid">
+                    {% include 'apps/parts/form_field.html' with field=form.first_name label=_("Ism") %}
+                    {% include 'apps/parts/form_field.html' with field=form.last_name label=_("Familiya") %}
+                    <div class="field"><label class="label">{% trans "Telefon" %}</label><input class="input" value="{{ user.phone|phone }}" disabled></div>
+                    {% include 'apps/parts/form_field.html' with field=form.telegram_id label=_("Telegram ID") hint=_("Bildirishnomalar uchun (ixtiyoriy)") %}
+                    {% include 'apps/parts/form_field.html' with field=form.region label=_("Viloyat") %}
+                    {% include 'apps/parts/form_field.html' with field=form.district label=_("Tuman") %}
+                    {% include 'apps/parts/form_field.html' with field=form.address label=_("Manzil") span=1 hint=_("Rasmiylashtirishda avtomatik to'ldiriladi") %}
                 </div>
-                <div class="card-body bg-light" bis_skin_checked="1">
-                    <form method="post" enctype="multipart/form-data" action="{% url 'settings_page' %}">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-lg-6" bis_skin_checked="1">
-                                {% trans "Ismi" %}
-                                <input type="text" name="first_name" class="form-control" maxlength="30"
-                                       id="id_first_name"
-                                       value="{{ user.first_name }}">
-                            </div>
-                            <div class="col-lg-6" bis_skin_checked="1">
-                                {% trans "Familiya" %}
-                                <input type="text" name="last_name" class="form-control" maxlength="40"
-                                       id="id_last_name"
-                                       value="{{ user.last_name }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-lg-6">
-                                {% trans "Viloyat" %}
-                                <select name="id_region" class="form-control" id="id_region"
-                                        onchange="getDistricts(this.value)">
-                                    <option value="">{% trans "Viloyat tanlang" %}</option>
-                                    {% for region in regions %}
-                                        <option value="{{ region.id }}"
-                                                {% if user.district.region.id == region.id %}selected{% endif %}>
-                                            {{ region.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-lg-6">
-                                {% trans "Tuman" %}
-                                <select name="district" class="form-control" id="district_id">
-                                    <option value="" selected disabled>{% trans "Tuman tanlang" %}</option>
-                                    {% if user.district.id %}
-                                        <option value="{{ user.district.id }}"
-                                                selected>{{ user.district.name }}</option>
-                                    {% endif %}
-                                </select>
-                            </div>
-                        </div>
-                        <script>
-                            function getDistricts(regionId) {
-                                const districtSelect = document.getElementById('district_id');
-                                districtSelect.innerHTML = '<option value="" selected disabled>Shahar/Tuman tanlang</option>';
-
-                                if (regionId) {
-                                    fetch(`/get-districts/${regionId}`)
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            data.forEach(district => {
-                                                const option = document.createElement('option');
-                                                option.value = district.id;
-                                                option.text = district.name;
-                                                districtSelect.appendChild(option);
-                                            });
-                                        })
-                                        .catch(error => console.log('Error:', error));
-                                }
-                            }
-                        </script>
-                        <div class="row">
-                            <div class="col-lg-6" bis_skin_checked="1">
-                                Manzil
-                                <input type="text" name="address" class="form-control" maxlength="100" id="id_address"
-                                       value="{{ user.address|default_if_none:'' }}">
-                            </div>
-                            <div class="col-lg-6" bis_skin_checked="1">
-                                Telegram id
-                                <input type="number" name="telegram_id" class="form-control" maxlength="10"
-                                       id="id_telegram" value="{{ user.telegram_id|default_if_none:'' }}">
-                            </div>
-                        </div>
-                        <div class="col-lg-6" bis_skin_checked="1">
-                            Siz haqingizda
-                            <textarea name="bio" cols="40" rows="10" class="form-control" maxlength="399"
-                                      id="id_bio">{{ user.bio|default_if_none:''|safe }}</textarea>
-                        </div>
-                        <div class="col-12 d-flex justify-content-end" bis_skin_checked="1">
-                            <button class="btn btn-primary" type="submit">{% trans "Saqlash" %}</button>
-                        </div>
-                    </form>
-                </div>
+                <div class="row mt-3" style="justify-content:flex-end"><button class="btn btn-dark" type="submit">{% trans "Saqlash" %}</button></div>
             </div>
-        </div>
-        <div class="col-lg-4 ps-lg-2" bis_skin_checked="1">
-            <div class="sticky-sidebar" bis_skin_checked="1">
-                <div class="card mb-3" bis_skin_checked="1">
-                    <div class="card-header" bis_skin_checked="1">
-                        <h5 class="mb-0">{% trans "Parolni o'zgartirish" %}</h5>
-                    </div>
-                    <div class="card-body bg-light" bis_skin_checked="1">
-                        <form method="post" action="{% url 'settings_change_page' %}" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="mb-3" bis_skin_checked="1">
-                                <label class="form-label" for="old-password">{% trans "Oldingi parol" %}</label>
-                                <input class="form-control" id="old-password" type="password" name="password">
-                            </div>
-                            <div class="mb-3" bis_skin_checked="1">
-                                <label class="form-label" for="new-password">{% trans "Yangi parol" %}</label>
-                                <input class="form-control" id="new-password" type="password" name="password1">
-                            </div>
-                            <div class="mb-3" bis_skin_checked="1">
-                                <label class="form-label"
-                                       for="confirm-password">{% trans "Yangi parolni takrorlash" %}</label>
-                                <input class="form-control" id="confirm-password" type="password" name="password2">
-                            </div>
-                            <button class="btn btn-primary d-block w-100" type="submit">{% trans "Parolni yangilash" %}
-                            </button>
-                        </form>
-                    </div>
+        </form>
+        <form class="card" method="post" action="{% url 'settings_change_page' %}" novalidate>
+            {% csrf_token %}
+            <div class="card-head"><h2>{% trans "Parolni o'zgartirish" %}</h2><svg class="i faint"><use href="#i-lock"/></svg></div>
+            <div class="card-body">
+                <div class="form-grid">
+                    {% include 'apps/parts/form_field.html' with field=password_form.password span=1 %}
+                    {% include 'apps/parts/form_field.html' with field=password_form.password1 %}
+                    {% include 'apps/parts/form_field.html' with field=password_form.password2 %}
                 </div>
+                <div class="row mt-3" style="justify-content:flex-end"><button class="btn btn-dark" type="submit">{% trans "Parolni yangilash" %}</button></div>
             </div>
-        </div>
+        </form>
     </div>
 {% endblock %}

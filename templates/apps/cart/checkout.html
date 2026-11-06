@@ -1,0 +1,67 @@
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Rasmiylashtirish" %}{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="page-head">
+        <div class="checkout-steps">
+            <span class="is-done"><span class="dot"><svg class="i i-sm"><use href="#i-check"/></svg></span>{% trans "Savat" %}</span><span class="sep"></span>
+            <span class="is-current"><span class="dot">2</span>{% trans "Ma'lumotlar" %}</span><span class="sep"></span>
+            <span><span class="dot">3</span>{% trans "Tasdiqlash" %}</span>
+        </div>
+        <h1>{% trans "Buyurtmani rasmiylashtirish" %}</h1>
+    </div>
+    <form method="post" class="cart-layout" data-checkout data-subtotal="{{ cart.subtotal }}"
+          data-tariffs='{"tashkent": {{ delivery_tariffs.tashkent }}, "tashkent_region": {{ delivery_tariffs.tashkent_region }}, "regions": {{ delivery_tariffs.regions }}}'
+          data-submit-once novalidate>
+        {% csrf_token %}
+        <div>
+            {% if form.non_field_errors %}<div class="alert alert-danger mb-2"><svg class="i"><use href="#i-alert"/></svg><div>{{ form.non_field_errors|join:" " }}</div></div>{% endif %}
+            <section class="card card-body checkout-section">
+                <h2><span class="num">1</span>{% trans "Qabul qiluvchi" %}</h2>
+                <div class="form-grid">
+                    {% include 'apps/parts/form_field.html' with field=form.full_name %}
+                    {% include 'apps/parts/form_field.html' with field=form.phone_number hint=_("Operator shu raqamga qo'ng'iroq qiladi") %}
+                </div>
+                {% if not user.is_authenticated %}<p class="text-sm muted mt-2">{% trans "Akkauntingiz bormi?" %} <a class="link" href="{% url 'login_page' %}?next={% url 'checkout_page' %}">{% trans "Kiring" %}</a> — {% trans "buyurtmalar tarixini kuzatish uchun." %}</p>{% endif %}
+            </section>
+            <section class="card card-body checkout-section">
+                <h2><span class="num">2</span>{% trans "Yetkazib berish manzili" %}</h2>
+                <div class="form-grid">
+                    {% include 'apps/parts/form_field.html' with field=form.region %}
+                    {% include 'apps/parts/form_field.html' with field=form.district %}
+                    {% include 'apps/parts/form_field.html' with field=form.address span=1 hint=_("Ko'cha, uy, xonadon — kuryer uchun") %}
+                </div>
+            </section>
+            <section class="card card-body checkout-section">
+                <h2><span class="num">3</span>{% trans "To'lov usuli" %}</h2>
+                <div class="pay-option"><svg class="i i-lg"><use href="#i-cash"/></svg>
+                    <div><strong>{% trans "Qabul qilganda to'lash" %}</strong><div class="text-sm muted">{% trans "Naqd pul yoki karta orqali kuryerga" %}</div></div>
+                    <svg class="i" style="margin-left:auto;color:var(--success)"><use href="#i-check"/></svg></div>
+            </section>
+        </div>
+        <aside class="summary">
+            <div class="card card-body">
+                <div class="row-between mb-2"><h2 style="font-size:var(--fs-lg)">{% trans "Buyurtmangiz" %}</h2><a class="link text-sm" href="{% url 'cart_page' %}">{% trans "O'zgartirish" %}</a></div>
+                <div class="mini-items">
+                    {% for item in cart.items %}
+                        <div class="mini-item">
+                            <span class="thumb"><img src="{{ item.product.image.url }}" alt="" width="56" height="56"><span>{{ item.quantity }}</span></span>
+                            <span><strong>{{ item.product.name|truncatechars:42 }}</strong><span class="muted text-xs">{{ item.unit_price|money }}</span></span>
+                            <b class="nowrap">{{ item.total|money }}</b>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="summary-rows">
+                    <div class="row-between"><span class="muted">{% trans "Mahsulotlar" %}</span><span>{{ cart.subtotal|money }}</span></div>
+                    {% if cart.savings %}<div class="row-between"><span class="muted">{% trans "Tejaganingiz" %}</span><span class="text-success">− {{ cart.savings|money }}</span></div>{% endif %}
+                    <div class="row-between"><span class="muted">{% trans "Yetkazib berish" %}</span><span data-delivery-fee>{% trans "Viloyatni tanlang" %}</span></div>
+                </div>
+                <div class="summary-total"><span>{% trans "Jami" %}</span><strong data-grand-total>{{ cart.subtotal|money }}</strong></div>
+                <button class="btn btn-primary btn-lg btn-block mt-3" type="submit">{% trans "Buyurtmani tasdiqlash" %}</button>
+                <div class="summary-note"><svg class="i i-sm"><use href="#i-headset"/></svg>{% trans "Tasdiqlashdan so'ng operator siz bilan bog'lanib, yetkazish vaqtini kelishib oladi." %}</div>
+            </div>
+        </aside>
+    </form>
+</div>
+{% endblock %}

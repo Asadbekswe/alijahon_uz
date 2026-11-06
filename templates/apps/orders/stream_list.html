@@ -1,109 +1,38 @@
-{% extends 'apps/base.html' %}
-{% load i18n %}
-{% load humanize %}
-{% block title %}
-    Stream List Page
-{% endblock %}
-{% block main_content %}
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Upload Leads from Facebook</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" class="form-class" action="/admin_page/upload-csv"
-                                  enctype="multipart/form-data">
-                                <input name="stream_id" type="hidden" id="hidden_stream_id">
-                                <input name="file" type="file" accept=".csv" required>
-                                <input type="submit" class="btn btn-primary mt-4" value="Upload CSV">
-                            </form>
-                        </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Oqimlarim" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "Oqimlarim" %}</h1><p>{% trans "Havolani ulashing — undan kelgan har bir buyurtma sizga biriktiriladi" %}</p></div>
+        <a class="btn btn-dark" href="{% url 'market_page' %}"><svg class="i i-sm"><use href="#i-plus"/></svg>{% trans "Yangi oqim" %}</a></div>
+    {% if streams %}
+        <div class="grid-2">
+            {% for stream in streams %}
+                <div class="stream-card">
+                    <div class="row">
+                        <img src="{{ stream.product.image.url }}" alt="" width="52" height="52" style="border-radius:12px">
+                        <div class="grow"><strong style="display:block">{{ stream.name }}</strong><span class="text-xs muted">{{ stream.product.name }}</span></div>
+                        <form method="post" action="{% url 'stream_delete' stream.pk %}" data-confirm="{% trans 'Oqimni o‘chirasizmi? Havola ishlamay qoladi.' %}">{% csrf_token %}
+                            <button class="btn btn-ghost btn-icon btn-sm" type="submit" aria-label="{% trans 'O‘chirish' %}"><svg class="i i-sm"><use href="#i-trash"/></svg></button></form>
+                    </div>
+                    <div class="m-stats">
+                        <div><span>{% trans "Tashrif" %}</span><strong>{{ stream.visit_count }}</strong></div>
+                        <div><span>{% trans "Buyurtma" %}</span><strong>{{ stream.order_total }}</strong></div>
+                        <div class="payout"><span>{% trans "Yetkazildi" %}</span><strong>{{ stream.delivered }}</strong></div>
+                    </div>
+                    <div class="row-between text-sm"><span class="muted">{% trans "Xaridor narxi" %}</span><b>{{ stream.sale_price|money }}{% if stream.discount %} <span class="tag tag-accent">−{{ stream.discount|number }}</span>{% endif %}</b></div>
+                    <div class="row-between text-sm"><span class="muted">{% trans "Sizga to'lov" %}</span><b class="text-success">{{ stream.payout|money }}</b></div>
+                    <div class="copy-field">
+                        <input id="ref-{{ stream.pk }}" value="{{ request.scheme }}://{{ request.get_host }}{{ stream.get_absolute_url }}" readonly aria-label="{% trans 'Havola' %}">
+                        <a class="btn btn-ghost btn-icon btn-sm" href="{{ stream.get_absolute_url }}" target="_blank" rel="noopener" aria-label="{% trans 'Ochish' %}"><svg class="i i-sm"><use href="#i-external"/></svg></a>
+                        <button class="btn btn-dark btn-sm" type="button" data-copy="ref-{{ stream.pk }}"><svg class="i i-sm"><use href="#i-copy"/></svg>{% trans "Nusxa" %}</button>
                     </div>
                 </div>
-            </div>
-            <div class="container">
-                <br>
-                <h3 class="text-center">{% trans 'Oqimlarim' %}</h3>
-                <br>
-                <div class="row">
-                    {% for stream in streams %}
-                        <div class="col-sm-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h5>{{ stream.name }}</h5>
-                                    <h5>- {{ stream.discount|intcomma }} sum</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-group mb-3">
-                                        <input type="text" id="ref_link_{{ stream.id }}"
-                                               value="{{ request.get_host }}{% url 'stream_detail' stream.id %}" readonly
-                                               class="ref_link form-control">
-                                    </div>
-                                    <div class="d-flex flex-wrap justify-content-between">
-                                        <button class="copy_ref_bn btn btn-primary me-1"
-                                                onclick="copyLabelText('{{ stream.id }}')">Copy Link
-                                        </button>
-
-                                        <a class="btn btn-primary me-1"
-                                           href="http://{{ request.get_host }}{% url 'stream_detail' stream.id %}" role="button">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                                 class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
-                                                <path fill-rule="evenodd"
-                                                      d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"></path>
-                                                <path fill-rule="evenodd"
-                                                      d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"></path>
-                                            </svg>
-                                        </a>
-
-                                        <button type="button" class="btn btn-primary me-1">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                 fill="currentColor"
-                                                 class="bi bi-telegram" viewBox="0 0 16 16">
-                                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906q-1.168.486-4.666 2.01-.567.225-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294q.39.01.868-.32 3.269-2.206 3.374-2.23c.05-.012.12-.026.166.016s.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8 8 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629q.14.092.27.187c.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.4 1.4 0 0 0-.013-.315.34.34 0 0 0-.114-.217.53.53 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09"></path>
-                                            </svg>
-                                        </button>
-                                        <button class="btn btn-primary btn_open_modal" type="button"
-                                                data-bs-toggle="modal" data-bs-target="#exampleModal"
-                                                name="{{ stream.id }}">CSV
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <br>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
+            {% endfor %}
         </div>
-    </div>
-
-    <div id="copy-message" style="display:none;" class="alert alert-success" role="alert">
-        Referral link copied!
-    </div>
-
-    <script>
-        function copyLabelText(streamId) {
-            const labelText = document.getElementById('ref_link_' + streamId).value;
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = labelText;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempTextArea);
-
-            const message = document.getElementById('copy-message');
-            message.style.display = 'block';
-
-            setTimeout(() => {
-                message.style.display = 'none';
-            }, 3000);
-        }
-    </script>
+        {% include 'apps/parts/pagination.html' %}
+    {% else %}
+        <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-link"/></svg></span>
+            <h2>{% trans "Hali oqim yaratmagansiz" %}</h2><p>{% trans "Marketdan mahsulot tanlang va birinchi havolangizni yarating." %}</p>
+            <a class="btn btn-primary" href="{% url 'market_page' %}">{% trans "Marketga o'tish" %}</a></div>
+    {% endif %}
 {% endblock %}

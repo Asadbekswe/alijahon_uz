@@ -1,0 +1,9 @@
+{% load i18n custom_tags %}
+<a class="order-card" href="{% url 'order_detail' order.pk %}">
+    <img src="{{ order.product.image.url }}" alt="" width="72" height="72" loading="lazy">
+    <div>
+        <h3>{{ order.product.name }}</h3>
+        <div class="meta"><span>#{{ order.pk }}</span><span>{{ order.created_at|date:"d.m.Y H:i" }}</span><span>{{ order.quantity }} {% trans "dona" %}</span></div>
+    </div>
+    <div class="side"><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span><strong class="nowrap">{{ order.total|money }}</strong></div>
+</a>

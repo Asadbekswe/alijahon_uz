@@ -1,92 +1,36 @@
-{% extends 'apps/base.html' %}
-{% load i18n %}
-{% block title %}
-    Stastika page
-{% endblock %}
-{% block main_content %}
-    <div class="card mb-3" bis_skin_checked="1">
-        <div class="card-body" bis_skin_checked="1">
-            <div class="container" bis_skin_checked="1">
-                <div class="container border-bottom-4" bis_skin_checked="1">
-                    <div class="header_tab_menu" bis_skin_checked="1">
-                        <div class="header_menu" style="overflow: auto" bis_skin_checked="1">
-                            <a href="{% url 'statistika_page' %}?period=today" class="btn btn-default">Bugun</a>
-                            <a href="{% url 'statistika_page' %}?period=yesterday" class="btn btn-default">Kechagi</a>
-                            <a href="{% url 'statistika_page' %}?period=weekly" class="btn btn-default">Haftalik</a>
-                            <a href="{% url 'statistika_page' %}?period=monthly" class="btn btn-default">Oylik</a>
-                            <a href="{% url 'statistika_page' %}?period=all" class="btn btn-default">Hammasi</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-responsive" bis_skin_checked="1">
-                    <table class="table">
-                        <thead class="text-center">
-                        <tr>
-                            <th scope="col">{% trans "Oqim" %}</th>
-                            <th scope="col">{% trans "Mahsulot" %}</th>
-                            <th scope="col">{% trans "Tashrif" %}</th>
-                            <th scope="col">{% trans "Yangi" %}</th>
-                            <th scope="col">{% trans "Dastavkaga tayyor" %}</th>
-                            <th scope="col">{% trans "Yetkazilmoqda" %}</th>
-                            <th scope="col">{% trans "Yetqazib berildi" %}</th>
-                            <th scope="col">{% trans "Telefon ko'tarmadi" %}</th>
-                            <th scope="col">{% trans "Nosoz, Buzuq" %}</th>
-                            <th scope="col">{% trans "Bekor qilindi" %}</th>
-                            <th scope="col">{% trans "Arxivlandi" %}</th>
-                        </tr>
-                        <tr class="bg-info">
-                            <td> JAMI</td>
-                            <td></td>
-                            <td> {{ streams.stream.total_visit_count }}</td>
-                            <td> {{ streams.stream.total_new_count }}</td>
-                            <td> {{ streams.stream.total_ready_count }}</td>
-                            <td> {{ streams.stream.total_deliver_count }}</td>
-                            <td> {{ streams.stream.total_delivered_count }}</td>
-                            <td> {{ streams.stream.total_cant_phone_count }}</td>
-                            <td> {{ streams.stream.total_broken_count }}</td>
-                            <td> {{ streams.stream.total_canceled_count }}</td>
-                            <td> {{ streams.stream.total_archived_count }}</td>
-                        </tr>
-                        </thead>
-
-                        <tbody class="text-center">
-                        {% for stream in streams %}
-                            <tr>
-                                <td>{{ stream.name }}</td>
-                                <td>{{ stream.product.name }}</td>
-                                <td>{{ stream.visit_count }}</td>
-                                <td>{{ stream.new }}</td>
-                                <td>{{ stream.ready }}</td>
-                                <td>{{ stream.deliver }}</td>
-                                <td>{{ stream.delivered }}</td>
-                                <td>{{ stream.cant_phone }}</td>
-                                <td>{{ stream.broken }}</td>
-                                <td>{{ stream.canceled }}</td>
-                                <td>{{ stream.archived }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-
-                        <tbody class="text-center">
-                        <tr class="bg-info">
-                            <td> JAMI</td>
-                            <td></td>
-                            <td> {{ streams.stream.total_visit_count }}</td>
-                            <td> {{ streams.stream.total_new_count }}</td>
-                            <td> {{ streams.stream.total_ready_count }}</td>
-                            <td> {{ streams.stream.total_deliver_count }}</td>
-                            <td> {{ streams.stream.total_delivered_count }}</td>
-                            <td> {{ streams.stream.total_cant_phone_count }}</td>
-                            <td> {{ streams.stream.total_broken_count }}</td>
-                            <td> {{ streams.stream.total_canceled_count }}</td>
-                            <td> {{ streams.stream.total_archived_count }}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="table-responsive" bis_skin_checked="1">
-                </div>
+{% extends 'apps/account_base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Statistika" %}{% endblock %}
+{% block panel %}
+    <div class="panel-head"><div><h1>{% trans "Statistika" %}</h1><p>{% trans "Oqimlaringiz bo'yicha buyurtmalar holati" %}</p></div></div>
+    <div class="status-tabs">{% for key, label in periods %}<a class="chip{% if key == active_period %} is-active{% endif %}" href="?period={{ key }}">{{ label }}</a>{% endfor %}</div>
+    <div class="kpis">
+        <div class="kpi"><div class="kpi-label">{% trans "Tashriflar" %}</div><div class="kpi-value">{{ totals.visits|number }}</div><div class="kpi-hint">{% trans "jami" %}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Yangi" %}</div><div class="kpi-value">{{ totals.new }}</div></div>
+        <div class="kpi"><div class="kpi-label">{% trans "Yetkazilmoqda" %}</div><div class="kpi-value">{{ totals.deliver }}</div></div>
+        <div class="kpi is-dark"><div class="kpi-label">{% trans "Yetkazildi" %}</div><div class="kpi-value">{{ totals.delivered }}</div></div>
+    </div>
+    <div class="card">
+        {% if streams %}
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>{% trans "Oqim" %}</th><th class="num">{% trans "Tashrif" %}</th>{% for key, label in columns %}<th class="num">{{ label }}</th>{% endfor %}</tr></thead>
+                    <tbody>
+                    {% for stream in streams %}
+                        <tr><td><div class="cell-product"><img src="{{ stream.product.image.url }}" alt=""><span><strong>{{ stream.name }}</strong><span>{{ stream.product.name }}</span></span></div></td>
+                            <td class="num">{{ stream.visit_count }}</td>
+                            <td class="num">{{ stream.new }}</td><td class="num">{{ stream.ready }}</td><td class="num">{{ stream.deliver }}</td><td class="num">{{ stream.delivered }}</td>
+                            <td class="num">{{ stream.cant_phone }}</td><td class="num">{{ stream.broken }}</td><td class="num">{{ stream.canceled }}</td><td class="num">{{ stream.archived }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot><tr><td>{% trans "Jami" %}</td><td class="num">{{ totals.visits }}</td>
+                        <td class="num">{{ totals.new }}</td><td class="num">{{ totals.ready }}</td><td class="num">{{ totals.deliver }}</td><td class="num">{{ totals.delivered }}</td>
+                        <td class="num">{{ totals.cant_phone }}</td><td class="num">{{ totals.broken }}</td><td class="num">{{ totals.canceled }}</td><td class="num">{{ totals.archived }}</td></tr></tfoot>
+                </table>
             </div>
-        </div>
+        {% else %}
+            <div class="empty"><span class="empty-icon"><svg class="i"><use href="#i-chart"/></svg></span><h2>{% trans "Statistika uchun oqim kerak" %}</h2>
+                <a class="btn btn-primary" href="{% url 'market_page' %}">{% trans "Oqim yaratish" %}</a></div>
+        {% endif %}
     </div>
 {% endblock %}

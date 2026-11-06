@@ -1,535 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Kuryer listi</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
-    <style>
-        body {
-            color: #566787;
-            background: #f5f5f5;
-            font-family: 'Varela Round', sans-serif;
-            font-size: 13px;
-        }
-
-        .table-responsive {
-            margin: 30px 0;
-        }
-
-        .table-wrapper {
-            background: #fff;
-            padding: 20px 25px;
-            border-radius: 3px;
-            min-width: 1000px;
-            box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
-        }
-
-        .table-title {
-            background: #435d7d;
-            color: #fff;
-            padding: 16px 30px;
-            min-width: 100%;
-            margin: -20px -25px 10px;
-            border-radius: 3px 3px 0 0;
-        }
-
-        .table-title h2 {
-            margin: 5px 0 0;
-            font-size: 24px;
-        }
-
-        .table-title .btn-group {
-            float: right;
-        }
-
-        .table-title .btn {
-            color: #fff;
-            float: right;
-            font-size: 13px;
-            border: none;
-            min-width: 50px;
-            border-radius: 2px;
-            outline: none !important;
-            margin-left: 10px;
-        }
-
-        .table-title .btn i {
-            float: left;
-            font-size: 21px;
-            margin-right: 5px;
-        }
-
-        .table-title .btn span {
-            float: left;
-            margin-top: 2px;
-        }
-
-        table.table tr th, table.table tr td {
-            border-color: #e9e9e9;
-            padding: 12px 15px;
-            vertical-align: middle;
-        }
-
-        table.table-striped tbody tr:nth-of-type(odd) {
-            background-color: #fcfcfc;
-        }
-
-        table.table-striped.table-hover tbody tr:hover {
-            background: #f5f5f5;
-        }
-
-        table.table th i {
-            font-size: 13px;
-            margin: 0 5px;
-            cursor: pointer;
-        }
-
-        table.table td:last-child i {
-            opacity: 0.9;
-            font-size: 22px;
-            margin: 0 5px;
-        }
-
-        table.table td a {
-            font-weight: bold;
-            color: #566787;
-            display: inline-block;
-            text-decoration: none;
-            outline: none !important;
-        }
-
-        table.table td a:hover {
-            color: #2196F3;
-        }
-
-        table.table td i {
-            font-size: 19px;
-        }
-
-        table.table .avatar {
-            border-radius: 50%;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-
-        .pagination {
-            float: right;
-            margin: 0 0 5px;
-        }
-
-        .pagination li a {
-            border: none;
-            font-size: 13px;
-            min-width: 30px;
-            min-height: 30px;
-            color: #999;
-            margin: 0 2px;
-            line-height: 30px;
-            border-radius: 2px !important;
-            text-align: center;
-            padding: 0 6px;
-        }
-
-        .pagination li a:hover {
-            color: #666;
-        }
-
-        .pagination li.active a, .pagination li.active a.page-link {
-            background: #03A9F4;
-        }
-
-        .pagination li.active a:hover {
-            background: #0397d6;
-        }
-
-        .pagination li.disabled i {
-            color: #ccc;
-        }
-
-        .pagination li i {
-            font-size: 16px;
-            padding-top: 6px
-        }
-
-        .hint-text {
-            float: left;
-            margin-top: 10px;
-            font-size: 13px;
-        }
-
-
-        /* Modal styles */
-        .modal .modal-dialog {
-            max-width: 400px;
-        }
-
-        .modal .modal-header, .modal .modal-body, .modal .modal-footer {
-            padding: 20px 30px;
-        }
-
-        .modal .modal-content {
-            border-radius: 3px;
-            font-size: 14px;
-        }
-
-        .modal .modal-footer {
-            background: #ecf0f1;
-            border-radius: 0 0 3px 3px;
-        }
-
-        .modal .modal-title {
-            display: inline-block;
-        }
-
-        .modal .form-control {
-            border-radius: 2px;
-            box-shadow: none;
-            border-color: #dddddd;
-        }
-
-        .modal textarea.form-control {
-            resize: vertical;
-        }
-
-        .modal .btn {
-            border-radius: 2px;
-            min-width: 100px;
-        }
-
-        .modal form label {
-            font-weight: normal;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container-xl">
-    <div class="table-responsive">
-        <div class="table-wrapper">
-            <div class="table-title">
-                <div class="row">
-                    <div class="col-auto mr-auto">
-                        <h2>Kuryerlar ro'yhati</h2>
-                    </div>
-                </div>
-
-            </div>
-            <table class="table table-striped table-hover">
-                <thead>
-                <tr>
-                    <th>Ismi</th>
-                    <th>Telefon nomeri</th>
-
-                    <th>Viloyati</th>
-
-
-                    <th>Aktivlashtirish</th>
-                </tr>
-                </thead>
-                <tbody>
-
-
-                <form method="POST" action="/operator/ordered_info/206"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000095</td>
-
-                    <td>Qoraqalpog'iston</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-                </tr>
-
-                <form method="POST" action="/operator/ordered_info/205"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000090</td>
-
-                    <td>Xorazm</td>
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/204"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000085</td>
-
-                    <td>Navoiy</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-                </tr>
-                <form method="POST" action="/operator/ordered_info/203"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000080</td>
-                    <td>Buxoro</td>
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-                            <input class="btn btn-primary" type="submit" value="">
-                        </i>
-                    </td>
-                </tr>
-                <form method="POST" action="/operator/ordered_info/196"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td>Samarqand</td>
-                    <td>998110000030</td>
-
-                    <td>Samarqand</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/201"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000070</td>
-
-                    <td>Qashqadaryo</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/202"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000075</td>
-
-                    <td>Surxondaryo</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-                <form method="POST" action="/operator/ordered_info/195"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td>Jizzax</td>
-                    <td>998110000025</td>
-
-                    <td>Jizzax</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/197"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000020</td>
-
-                    <td>Sirdaryo</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/182"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000010</td>
-
-                    <td>Toshkent viloyati</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/200"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000060</td>
-
-                    <td>Namangan</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/198"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000040</td>
-
-                    <td>Farg'ona</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/199"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000050</td>
-
-                    <td>Andijon</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                <form method="POST" action="/operator/ordered_info/181"></form>
-                <input type="hidden" name="csrfmiddlewaretoken"
-                       value="DASbZodJ60ScLP1YCNsrBhtP9kkqhsrwrmN4pXwAaynTNN55V5WCgoxhgOonLqY5">
-                <tr>
-                    <td></td>
-                    <td>998110000001</td>
-
-                    <td>Toshkent shahar</td>
-
-
-                    <td>
-                        <i class="material-icons" data-toggle="tooltip" title="Biriktirish">
-
-                            <input class="btn btn-primary" type="submit" value="">
-
-                        </i>
-                    </td>
-
-
-                </tr>
-
-
-                </tbody>
-            </table>
+{% extends 'apps/base.html' %}
+{% load i18n custom_tags %}
+{% block title %}{% trans "Kuryer paneli" %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="container panel-layout">
+    <nav class="side-nav" aria-label="{% trans 'Kuryer paneli' %}">
+        <div class="who"><span class="avatar">{{ user.initials }}</span><span><strong>{{ user.display_name }}</strong><span>{% trans "Kuryer" %} · ID {{ user.pk }}</span></span></div>
+        {% for key, label, count in tabs %}
+            <a class="{% if key == active_tab %}is-active{% endif %}" href="?tab={{ key }}{% if active_region %}&amp;region={{ active_region }}{% endif %}">
+                <svg class="i"><use href="#i-{% if key == 'pool' %}inbox{% elif key == 'delivering' %}truck{% elif key == 'delivered' %}check{% else %}refresh{% endif %}"/></svg>{{ label }}<span class="count">{{ count }}</span></a>
+        {% endfor %}
+        <div class="balance-chip"><span>{% trans "Yetkazilgan summa" %}</span><strong>{{ delivered_sum|money }}</strong></div>
+    </nav>
+    <div>
+        <div class="panel-head">
+            <div><h1>{% for key, label, count in tabs %}{% if key == active_tab %}{{ label }} <span class="faint">{{ count }}</span>{% endif %}{% endfor %}</h1>
+                <p>{% if active_tab == 'pool' %}{% trans "Yetkazishga tayyor buyurtmalar — o'zingizga oling" %}{% else %}{% trans "Sizga biriktirilgan buyurtmalar" %}{% endif %}</p></div>
+            <form method="get" class="row"><input type="hidden" name="tab" value="{{ active_tab }}">
+                <select class="select" name="region" data-autosubmit style="width:auto;height:40px;border-radius:var(--r-pill)">
+                    <option value="">{% trans "Barcha hududlar" %}</option>
+                    {% for region in regions %}<option value="{{ region.pk }}" {% if active_region == region.pk|stringformat:"s" %}selected{% endif %}>{{ region.name }}</option>{% endfor %}
+                </select></form>
         </div>
+        {% if orders %}
+            <div class="work-board">
+                {% for order in orders %}
+                    <article class="work-card">
+                        <div>
+                            <h3>#{{ order.pk }} · {{ order.product.name }} <span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></h3>
+                            <div class="meta">
+                                <span><svg class="i i-sm" style="display:inline;vertical-align:-3px"><use href="#i-pin"/></svg> <b>{{ order.region|default:"—" }}{% if order.district %}, {{ order.district }}{% endif %}{% if order.address %}, {{ order.address }}{% endif %}</b></span>
+                                <span><b>{{ order.full_name }}</b> · {{ order.phone_number|phone }}</span>
+                                <span>{% trans "Olinadigan summa" %}: <b>{{ order.total|money }}</b></span>
+                                {% if order.send_order_date %}<span>{% trans "Sana" %}: <b>{{ order.send_order_date|date:"d.m.Y" }}</b></span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="actions">
+                            {% if active_tab == 'pool' %}
+                                <form method="post" action="{% url 'currier_take' order.pk %}">{% csrf_token %}<button class="btn btn-sm btn-primary" type="submit"><svg class="i i-sm"><use href="#i-truck"/></svg>{% trans "Olish" %}</button></form>
+                            {% elif active_tab == 'delivering' %}
+                                <a class="btn btn-sm" href="tel:+998{{ order.phone_number }}"><svg class="i i-sm"><use href="#i-phone"/></svg></a>
+                                <form method="post" action="{% url 'currier_detail_page' order.pk %}">{% csrf_token %}<input type="hidden" name="status" value="delivered">
+                                    <button class="btn btn-sm btn-success" type="submit"><svg class="i i-sm"><use href="#i-check"/></svg>{% trans "Yetkazildi" %}</button></form>
+                                <form method="post" action="{% url 'currier_detail_page' order.pk %}" data-confirm="{% trans 'Buyurtma bekor qilinsinmi?' %}">{% csrf_token %}<input type="hidden" name="status" value="canceled">
+                                    <button class="btn btn-sm btn-danger" type="submit">{% trans "Bekor" %}</button></form>
+                                <form method="post" action="{% url 'currier_detail_page' order.pk %}" data-confirm="{% trans 'Mahsulot nosoz deb belgilansinmi?' %}">{% csrf_token %}<input type="hidden" name="status" value="broken">
+                                    <button class="btn btn-sm btn-ghost" type="submit">{% trans "Nosoz" %}</button></form>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            {% with querystring="tab="|add:active_tab %}{% include 'apps/parts/pagination.html' %}{% endwith %}
+        {% else %}
+            <div class="card empty"><span class="empty-icon"><svg class="i"><use href="#i-truck"/></svg></span><h2>{% trans "Buyurtmalar yo'q" %}</h2>
+                <p>{% trans "Yangi buyurtmalar yetkazishga tayyor bo'lganda shu yerda chiqadi." %}</p></div>
+        {% endif %}
     </div>
 </div>
-
-
-</body>
-</html>
+{% endblock %}
